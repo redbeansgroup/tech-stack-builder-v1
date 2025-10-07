@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Stack Sandwich Builder</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+    <header>
+        <h1>Tech Stack Sandwich Builder 🥪</h1>
+        <p>Build your business's tech stack as easily as making a sandwich.</p>
+    </header>
+
+    <main>
+        <div class="controls">
+            <input type="text" id="businessName" placeholder="Enter Your Business Name">
+            <button id="startBtn">Make a Tech Stack</button>
+        </div>
+
+        <div id="builder" class="hidden">
+            <h2>Step 1: Choose Your Ingredients (Categories)</h2>
+            <div id="categoryToggles"></div>
+
+            <h2>Step 2: Add Apps to Your Stack</h2>
+            <div id="app-selection-area">
+                </div>
+
+            <h2>Step 3: Review Your Tech Stack Sandwich</h2>
+            <div id="tech-stack-table">
+                <div class="table-header">
+                    <div class="header-item">Category / App</div>
+                    <div class="header-item">Description</div>
+                    <div class="header-item">
+                        Cost
+                        <label class="switch">
+                            <input type="checkbox" id="costToggle">
+                            <span class="slider round"></span>
+                        </label>
+                        <span id="toggleLabel">Monthly</span>
+                    </div>
+                </div>
+                <div id="stack-rows" class="droppable">
+                    </div>
+                <div class="table-footer">
+                    <div class="footer-item">Total:</div>
+                    <div class="footer-item" id="totalCost">$0.00</div>
+                </div>
+            </div>
+            
+            <button id="exportPdfBtn">Export as PDF</button>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
