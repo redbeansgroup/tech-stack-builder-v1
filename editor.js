@@ -1,110 +1,147 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const editorForms = document.getElementById('editor-forms');
+    const jsonFileInput = document.getElementById('jsonFileInput');
+    const editorContent = document.getElementById('editor-content');
+    const categoryListDiv = document.getElementById('category-list');
+    const appListDiv = document.getElementById('app-list');
+    const addCategoryBtn = document.getElementById('addCategoryBtn');
+    const addAppBtn = document.getElementById('addAppBtn');
     const saveJsonBtn = document.getElementById('saveJsonBtn');
-    let currentData = {};
 
-    async function loadInitialJson() {
-        try {
-            const response = await fetch('data.json');
-            currentData = await response.json();
-            buildEditor();
-        } catch (error) {
-            console.error('Could not load data.json:', error);
-            // Initialize with empty structure if file doesn't exist
-            currentData = { settings: {}, categories: [], apps: [] };
-            buildEditor();
-        }
-    }
+    let currentData = {
+        settings: {},
+        categories: [],
+        apps: []
+    };
+
+    // Event listener for the file input
+    jsonFileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                currentData = JSON.parse(e.target.result);
+                editorContent.classList.remove('hidden');
+                buildEditor();
+            } catch (error) {
+                alert('Error parsing JSON file. Please check the file format.');
+                console.error("JSON Parse Error:", error);
+            }
+        };
+        reader.readAsText(file);
+    });
 
     function buildEditor() {
-        // Clear previous forms
-        editorForms.innerHTML = '';
-        
-        // Settings Editor
-        // (Simplified for brevity - can be expanded for fonts, colors)
+        buildCategoryList();
+        buildAppList();
+    }
 
-        // Categories Editor
-        let categoriesHtml = '<div class="editor-section"><h2>Categories</h2><div id="category-list">';
+    // Renders the list of category input fields
+    function buildCategoryList() {
+        categoryListDiv.innerHTML = '';
         currentData.categories.forEach((cat, index) => {
-            categoriesHtml += `<div><input type="text" value="${cat.name}" data-index="${index}" class="category-name"></div>`;
-        });
-        categoriesHtml += '</div><button id="addCategoryBtn">Add Category</button></div>';
-        editorForms.innerHTML += categoriesHtml;
-
-        // Apps Editor
-        let appsHtml = '<div class="editor-section"><h2>Apps</h2><div id="app-list">';
-        currentData.apps.forEach((app, index) => {
-            appsHtml += `
-                <div class="app-editor-item">
-                    <input type="text" placeholder="App Name" value="${app.name}" data-index="${index}" class="app-name">
-                    <textarea placeholder="Description" data-index="${index}" class="app-desc">${app.description}</textarea>
-                    <input type="text" placeholder="Icon Path" value="${app.icon}" data-index="${index}" class="app-icon">
-                    <select data-index="${index}" class="app-category">${createCategoryOptions(app.category)}</select>
-                    <input type="number" step="0.01" placeholder="Monthly Cost" value="${app.cost.monthly}" data-index="${index}" class="app-cost-monthly">
-                    <input type="number" step="0.01" placeholder="Yearly Cost" value="${app.cost.yearly}" data-index="${index}" class="app-cost-yearly">
-                </div>
+            const div = document.createElement('div');
+            div.className = 'category-item';
+            div.innerHTML = `
+                <input type="text" value="${cat.name}" data-type="category" data-index="${index}">
+                <button class="delete-btn" data-type="category" data-index="${index}">×</button>
             `;
+            categoryListDiv.appendChild(div);
         });
-        appsHtml += '</div><button id="addAppBtn">Add App</button></div>';
-        editorForms.innerHTML += appsHtml;
-        
-        // Add event listeners for dynamic buttons
-        document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
-        document.getElementById('addAppBtn').addEventListener('click', addApp);
     }
-    
+
+    // Renders the list of app editor cards
+    function buildAppList() {
+        appListDiv.innerHTML = '';
+        currentData.apps.forEach((app, index) => {
+            const div = document.createElement('div');
+            div.className = 'app-card';
+            div.innerHTML = `
+                <input type="text" placeholder="App Name" value="${app.name}" data-index="${index}" data-field="name">
+                <textarea placeholder="Description" data-index="${index}" data-field="description">${app.description}</textarea>
+                <input type="text" placeholder="Icon Path" value="${app.icon}" data-index="${index}" data-field="icon">
+                <select data-index="${index}" data-field="category">${createCategoryOptions(app.category)}</select>
+                <input type="number" step="0.01" placeholder="Monthly Cost" value="${app.cost.monthly}" data-index="${index}" data-field="cost-monthly">
+                <input type="number" step="0.01" placeholder="Yearly Cost" value="${app.cost.yearly}" data-index="${index}" data-field="cost-yearly">
+                <button class="delete-btn" data-type="app" data-index="${index}">×</button>
+            `;
+            appListDiv.appendChild(div);
+        });
+    }
+
     function createCategoryOptions(selectedCategory) {
-        let options = '';
-        (currentData.categories || []).forEach(cat => {
-            options += `<option value="${cat.name}" ${cat.name === selectedCategory ? 'selected' : ''}>${cat.name}</option>`;
+        return currentData.categories.map(cat => 
+            `<option value="${cat.name}" ${cat.name === selectedCategory ? 'selected' : ''}>${cat.name}</option>`
+        ).join('');
+    }
+
+    // --- Event Handlers for Adding/Deleting ---
+    addCategoryBtn.addEventListener('click', () => {
+        currentData.categories.push({ name: "New Category" });
+        buildCategoryList();
+    });
+
+    addAppBtn.addEventListener('click', () => {
+        const newId = currentData.apps.length > 0 ? Math.max(...currentData.apps.map(a => a.id)) + 1 : 1;
+        currentData.apps.push({
+            id: newId,
+            name: "New App",
+            category: currentData.categories[0]?.name || "",
+            description: "A short description.",
+            icon: "icons/sunshine.png",
+            cost: { monthly: 20.00, yearly: 17.00 }
         });
-        return options;
-    }
+        buildAppList();
+    });
 
-    function addCategory() {
-        const categoryList = document.getElementById('category-list');
-        const newCatDiv = document.createElement('div');
-        newCatDiv.innerHTML = `<input type="text" placeholder="New Category" class="category-name">`;
-        categoryList.appendChild(newCatDiv);
-    }
-    
-    function addApp() {
-        const appList = document.getElementById('app-list');
-        const newAppDiv = document.createElement('div');
-        newAppDiv.className = 'app-editor-item';
-        newAppDiv.innerHTML = `
-            <input type="text" placeholder="App Name" class="app-name">
-            <textarea placeholder="Description" class="app-desc"></textarea>
-            <input type="text" placeholder="Icon Path" value="icons/sunshine.png" class="app-icon">
-            <select class="app-category">${createCategoryOptions('')}</select>
-            <input type="number" step="0.01" placeholder="Monthly Cost" value="20.00" class="app-cost-monthly">
-            <input type="number" step="0.01" placeholder="Yearly Cost" value="17.00" class="app-cost-yearly">
-        `;
-        appList.appendChild(newAppDiv);
-    }
-    
-    function saveData() {
-        const updatedData = { settings: currentData.settings || {}, categories: [], apps: [] };
-
-        document.querySelectorAll('.category-name').forEach(input => {
-            if(input.value) updatedData.categories.push({ name: input.value });
-        });
-
-        document.querySelectorAll('.app-editor-item').forEach((item, index) => {
-            const name = item.querySelector('.app-name').value;
-            if (!name) return; // Don't save empty app entries
+    // Use event delegation for delete buttons
+    document.body.addEventListener('click', (event) => {
+        if (event.target.classList.contains('delete-btn')) {
+            const type = event.target.dataset.type;
+            const index = parseInt(event.target.dataset.index, 10);
             
-            updatedData.apps.push({
-                id: currentData.apps[index]?.id || Date.now() + index, // Keep old ID or generate new
-                name: name,
-                description: item.querySelector('.app-desc').value,
-                icon: item.querySelector('.app-icon').value,
-                category: item.querySelector('.app-category').value,
-                cost: {
-                    monthly: parseFloat(item.querySelector('.app-cost-monthly').value) || 0,
-                    yearly: parseFloat(item.querySelector('.app-cost-yearly').value) || 0
+            if (confirm(`Are you sure you want to delete this ${type}?`)) {
+                if (type === 'category') {
+                    currentData.categories.splice(index, 1);
+                    buildCategoryList(); // Re-render categories
+                    buildAppList(); // Re-render apps to update category dropdowns
+                } else if (type === 'app') {
+                    currentData.apps.splice(index, 1);
+                    buildAppList();
+                }
+            }
+        }
+    });
+
+    // --- Save Logic ---
+    saveJsonBtn.addEventListener('click', () => {
+        const updatedData = { settings: currentData.settings, categories: [], apps: [] };
+
+        // Save categories
+        document.querySelectorAll('#category-list input').forEach(input => {
+            if (input.value) {
+                updatedData.categories.push({ name: input.value });
+            }
+        });
+
+        // Save apps
+        document.querySelectorAll('#app-list .app-card').forEach((card, i) => {
+            const originalApp = currentData.apps[i] || { id: Date.now() };
+            const appData = { id: originalApp.id };
+            card.querySelectorAll('input, textarea, select').forEach(field => {
+                const key = field.dataset.field;
+                if (key === 'cost-monthly') {
+                    appData.cost = { ...appData.cost, monthly: parseFloat(field.value) || 0 };
+                } else if (key === 'cost-yearly') {
+                    appData.cost = { ...appData.cost, yearly: parseFloat(field.value) || 0 };
+                } else {
+                    appData[key] = field.value;
                 }
             });
+            if (appData.name) {
+                updatedData.apps.push(appData);
+            }
         });
 
         // Trigger download
@@ -115,8 +152,5 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
-    }
-
-    saveJsonBtn.addEventListener('click', saveData);
-    loadInitialJson();
+    });
 });
