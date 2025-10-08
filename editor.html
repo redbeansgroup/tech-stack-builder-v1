@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Stack JSON Editor</title>
+    <link rel="stylesheet" href="editor.style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Tech Stack JSON Editor ✨</h1>
+        <p>Load, edit, and generate your <code>data.json</code> file.</p>
+    </header>
+
+    <main>
+        <div class="editor-section file-controls">
+            <h2>Step 1: Load Data</h2>
+            <label for="jsonFileInput">Load an existing <code>data.json</code> file:</label>
+            <input type="file" id="jsonFileInput" accept=".json">
+        </div>
+
+        <div id="editor-content" class="hidden">
+            <div class="editor-section">
+                <h2>Step 2: Edit Categories</h2>
+                <div id="category-list">
+                    </div>
+                <button id="addCategoryBtn" class="add-btn">＋ Add Category</button>
+            </div>
+
+            <div class="editor-section">
+                <h2>Step 3: Edit Apps</h2>
+                <div id="app-list">
+                    </div>
+                <button id="addAppBtn" class="add-btn">＋ Add App</button>
+            </div>
+
+            <div class="editor-section save-controls">
+                <h2>Step 4: Save Changes</h2>
+                <button id="saveJsonBtn">Generate and Download <code>data.json</code></button>
+            </div>
+        </div>
+    </main>
+
+    <script src="editor.js"></script>
+</body>
+</html>
