@@ -33,7 +33,7 @@
       "currency": "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/{base}.json",
       "iconSearch": "https://api.iconify.design/search?query={query}&limit=30",
       "iconRetrieve": "https://api.iconify.design/{icon}.svg",
-      "pieChart": "https://quickchart.io/chart?c={type:'pie',data:{labels:[{labels}],datasets:[{data:[{data}]}]}}"
+      "pieChart": "https://quickchart.io/chart?bkg=transparent&c={type:'pie',data:{labels:[{labels}],datasets:[{data:[{data}]}]}}"
     },
     "templates": [
       {
