@@ -1,95 +1,252 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const editorForms = document.getElementById('editor-forms');
-    const saveJsonBtn = document.getElementById('saveJsonBtn');
-    let currentData = {};
+    const jsonFileInput = document.getElementById('jsonFileInput');
+    const editorContent = document.getElementById('editor-content');
+    
+    // Div containers for each section
+    const configEditorDiv = document.getElementById('config-editor');
+    const themeListDiv = document.getElementById('theme-list');
+    const categoryListDiv = document.getElementById('category-list');
+    const appListDiv = document.getElementById('app-list');
+    const templateListDiv = document.getElementById('template-list');
 
-    async function loadInitialJson() {
-        try {
-            const response = await fetch('data.json');
-            currentData = await response.json();
-            buildEditor();
-        } catch (error) {
-            console.error('Could not load data.json:', error);
-            // Initialize with empty structure if file doesn't exist
-            currentData = { settings: {}, categories: [], apps: [] };
-            buildEditor();
+    // "Add" buttons
+    const addThemeBtn = document.getElementById('addThemeBtn');
+    const addCategoryBtn = document.getElementById('addCategoryBtn');
+    const addAppBtn = document.getElementById('addAppBtn');
+    const addTemplateBtn = document.getElementById('addTemplateBtn');
+    const saveJsonBtn = document.getElementById('saveJsonBtn');
+
+    let fullData = {};
+
+    // --- FILE LOADING ---
+    jsonFileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                fullData = JSON.parse(e.target.result);
+                editorContent.classList.remove('hidden');
+                buildFullEditor();
+            } catch (error) {
+                alert('Error parsing JSON file. Please check the file format.');
+                console.error("JSON Parse Error:", error);
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    function buildFullEditor() {
+        buildConfigEditor();
+        buildThemesEditor();
+        buildCategoriesEditor();
+        buildAppsEditor();
+        buildTemplatesEditor();
+    }
+    
+    // --- BUILDER FUNCTIONS ---
+
+    function buildConfigEditor() {
+        configEditorDiv.innerHTML = '<h3>API URLs</h3>';
+        for (const key in fullData.config.apis) {
+            configEditorDiv.innerHTML += `
+                <label for="config-api-${key}">${key}</label>
+                <input type="text" id="config-api-${key}" value="${fullData.config.apis[key]}" data-config-type="api" data-key="${key}">
+            `;
         }
+        configEditorDiv.innerHTML += '<h3>Currencies</h3>';
+        configEditorDiv.innerHTML += `
+            <label for="config-currencies">Supported Currencies (comma-separated)</label>
+            <input type="text" id="config-currencies" value="${fullData.config.currencies.supported.join(', ')}">
+        `;
     }
 
-    function buildEditor() {
-        // Clear previous forms
-        editorForms.innerHTML = '';
-        
-        // Settings Editor
-        // (Simplified for brevity - can be expanded for fonts, colors)
-
-        // Categories Editor
-        let categoriesHtml = '<div class="editor-section"><h2>Categories</h2>';
-        currentData.categories.forEach((cat, index) => {
-            categoriesHtml += `<div><input type="text" value="${cat.name}" data-index="${index}" class="category-name"></div>`;
-        });
-        categoriesHtml += '<button id="addCategoryBtn">Add Category</button></div>';
-        editorForms.innerHTML += categoriesHtml;
-
-        // Apps Editor
-        let appsHtml = '<div class="editor-section"><h2>Apps</h2>';
-        currentData.apps.forEach((app, index) => {
-            appsHtml += `
-                <div class="app-editor-item" style="border-top: 1px solid #ddd; padding-top: 10px;">
-                    <input type="text" placeholder="App Name" value="${app.name}" data-index="${index}" class="app-name">
-                    <textarea placeholder="Description" data-index="${index}" class="app-desc">${app.description}</textarea>
-                    <input type="text" placeholder="Icon Path (e.g., icons/app.png)" value="${app.icon}" data-index="${index}" class="app-icon">
-                    <select data-index="${index}" class="app-category">${createCategoryOptions(app.category)}</select>
-                    <input type="number" step="0.01" placeholder="Monthly Cost" value="${app.cost.monthly}" data-index="${index}" class="app-cost-monthly">
-                    <input type="number" step="0.01" placeholder="Yearly Cost" value="${app.cost.yearly}" data-index="${index}" class="app-cost-yearly">
+    function buildThemesEditor() {
+        themeListDiv.innerHTML = '';
+        fullData.config.themes.forEach((theme, index) => {
+            const div = document.createElement('div');
+            div.className = 'item-card';
+            div.innerHTML = `
+                <button class="delete-btn" onclick="deleteItem('theme', ${index})">×</button>
+                <h3>Theme ${index + 1}</h3>
+                <label>Name</label>
+                <input type="text" value="${theme.name}" class="theme-name">
+                <label>Font Family</label>
+                <input type="text" value="${theme.fontFamily}" class="theme-font">
+                <div class="theme-card-grid">
+                    <div class="theme-colors">
+                        <h4>Light Mode</h4>
+                        <div class="color-input-group"><label>Primary</label><input type="color" value="${theme.light.primary}" class="theme-light-primary"></div>
+                        <div class="color-input-group"><label>Secondary</label><input type="color" value="${theme.light.secondary}" class="theme-light-secondary"></div>
+                    </div>
+                    <div class="theme-colors">
+                        <h4>Dark Mode</h4>
+                        <div class="color-input-group"><label>Primary</label><input type="color" value="${theme.dark.primary}" class="theme-dark-primary"></div>
+                        <div class="color-input-group"><label>Secondary</label><input type="color" value="${theme.dark.secondary}" class="theme-dark-secondary"></div>
+                    </div>
                 </div>
             `;
+            themeListDiv.appendChild(div);
         });
-        appsHtml += '<button id="addAppBtn">Add App</button></div>';
-        editorForms.innerHTML += appsHtml;
     }
-    
-    function createCategoryOptions(selectedCategory) {
-        let options = '';
-        currentData.categories.forEach(cat => {
-            options += `<option value="${cat.name}" ${cat.name === selectedCategory ? 'selected' : ''}>${cat.name}</option>`;
+
+    function buildCategoriesEditor() {
+        categoryListDiv.innerHTML = '';
+        fullData.categories.forEach((cat, index) => {
+            const div = document.createElement('div');
+            div.className = 'item-card';
+            div.innerHTML = `
+                <button class="delete-btn" onclick="deleteItem('category', ${index})">×</button>
+                <label>Category Name</label>
+                <input type="text" value="${cat.name}" class="cat-name">
+                <label>Icon (from iconify, e.g., mdi:database)</label>
+                <input type="text" value="${cat.icon}" class="cat-icon">
+            `;
+            categoryListDiv.appendChild(div);
         });
-        return options;
     }
-    
-    function saveData() {
-        // Collect data from forms and build the new JSON object
-        const updatedData = { settings: currentData.settings, categories: [], apps: [] };
 
-        document.querySelectorAll('.category-name').forEach(input => {
-            updatedData.categories.push({ name: input.value });
+    function buildAppsEditor() {
+        appListDiv.innerHTML = '';
+        const currencyOptions = fullData.config.currencies.supported.map(c => `<option value="${c}">${c}</option>`).join('');
+        const categoryOptions = fullData.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+
+        fullData.apps.forEach((app, index) => {
+            const div = document.createElement('div');
+            div.className = 'item-card';
+            div.innerHTML = `
+                <button class="delete-btn" onclick="deleteItem('app', ${index})">×</button>
+                <label>App Name</label><input type="text" value="${app.name}" class="app-name">
+                <label>Description</label><textarea class="app-desc">${app.description}</textarea>
+                <label>Category</label><select class="app-cat">${categoryOptions}</select>
+                <label>Monthly Cost</label><input type="number" step="0.01" value="${app.cost.monthly}" class="app-cost-monthly">
+                <label>Yearly Cost</label><input type="number" step="0.01" value="${app.cost.yearly}" class="app-cost-yearly">
+                <label>Currency</label><select class="app-currency">${currencyOptions}</select>
+            `;
+            // Set selected options
+            div.querySelector('.app-cat').value = app.category;
+            div.querySelector('.app-currency').value = app.cost.currency;
+            appListDiv.appendChild(div);
+        });
+    }
+
+    function buildTemplatesEditor() {
+        templateListDiv.innerHTML = '';
+        const appCheckboxes = fullData.apps.map(app => `
+            <label class="template-app-item">
+                <input type="checkbox" value="${app.id}"> ${app.name} (ID: ${app.id})
+            </label>
+        `).join('');
+
+        fullData.config.templates.forEach((template, index) => {
+            const div = document.createElement('div');
+            div.className = 'item-card';
+            div.innerHTML = `
+                <button class="delete-btn" onclick="deleteItem('template', ${index})">×</button>
+                <label>Template Name</label>
+                <input type="text" value="${template.name}" class="template-name">
+                <label>Included Apps</label>
+                <div class="template-apps-list">${appCheckboxes}</div>
+            `;
+            // Check the correct boxes
+            template.appIds.forEach(id => {
+                const checkbox = div.querySelector(`input[value="${id}"]`);
+                if(checkbox) checkbox.checked = true;
+            });
+            templateListDiv.appendChild(div);
+        });
+    }
+
+    // --- ADD/DELETE LOGIC ---
+    window.deleteItem = (type, index) => {
+        if (confirm(`Are you sure you want to delete this ${type}?`)) {
+            if (type === 'theme') fullData.config.themes.splice(index, 1);
+            if (type === 'category') fullData.categories.splice(index, 1);
+            if (type === 'app') fullData.apps.splice(index, 1);
+            if (type === 'template') fullData.config.templates.splice(index, 1);
+            buildFullEditor(); // Re-render everything
+        }
+    };
+    
+    addThemeBtn.addEventListener('click', () => {
+        fullData.config.themes.push({ name: "New Theme", fontFamily: "sans-serif", light: { primary: "#000000", secondary: "#cccccc" }, dark: { primary: "#ffffff", secondary: "#333333" } });
+        buildThemesEditor();
+    });
+    addCategoryBtn.addEventListener('click', () => {
+        fullData.categories.push({ name: "New Category", icon: "mdi:help-box" });
+        buildCategoriesEditor();
+    });
+    addAppBtn.addEventListener('click', () => {
+        fullData.apps.push({ id: Date.now(), name: "New App", category: "", description: "", cost: { monthly: 0, yearly: 0, currency: "USD" } });
+        buildAppsEditor();
+    });
+    addTemplateBtn.addEventListener('click', () => {
+        fullData.config.templates.push({ name: "New Template", appIds: [] });
+        buildTemplatesEditor();
+    });
+
+    // --- SAVE LOGIC ---
+    saveJsonBtn.addEventListener('click', () => {
+        const newData = { config: { apis: {}, currencies: {}, themes: [], templates: [] }, categories: [], apps: [] };
+
+        // Save Config
+        document.querySelectorAll('#config-editor input').forEach(input => {
+            if (input.dataset.configType === 'api') {
+                newData.config.apis[input.dataset.key] = input.value;
+            } else if (input.id === 'config-currencies') {
+                newData.config.currencies.supported = input.value.split(',').map(c => c.trim());
+            }
+        });
+        newData.config.currencies.default = fullData.config.currencies.default; // Preserve default
+
+        // Save Themes
+        document.querySelectorAll('#theme-list .item-card').forEach(card => {
+            newData.config.themes.push({
+                name: card.querySelector('.theme-name').value,
+                fontFamily: card.querySelector('.theme-font').value,
+                light: { primary: card.querySelector('.theme-light-primary').value, secondary: card.querySelector('.theme-light-secondary').value },
+                dark: { primary: card.querySelector('.theme-dark-primary').value, secondary: card.querySelector('.theme-dark-secondary').value }
+            });
         });
 
-        document.querySelectorAll('.app-editor-item').forEach((item, index) => {
-            updatedData.apps.push({
-                id: currentData.apps[index]?.id || Date.now(), // Keep old ID or generate new
-                name: item.querySelector('.app-name').value,
-                description: item.querySelector('.app-desc').value,
-                icon: item.querySelector('.app-icon').value,
-                category: item.querySelector('.app-category').value,
+        // Save Categories
+        document.querySelectorAll('#category-list .item-card').forEach(card => {
+            newData.categories.push({
+                name: card.querySelector('.cat-name').value,
+                icon: card.querySelector('.cat-icon').value
+            });
+        });
+
+        // Save Apps
+        document.querySelectorAll('#app-list .item-card').forEach((card, index) => {
+            newData.apps.push({
+                id: fullData.apps[index].id, // Preserve original ID
+                name: card.querySelector('.app-name').value,
+                category: card.querySelector('.app-cat').value,
+                description: card.querySelector('.app-desc').value,
                 cost: {
-                    monthly: parseFloat(item.querySelector('.app-cost-monthly').value),
-                    yearly: parseFloat(item.querySelector('.app-cost-yearly').value)
+                    monthly: parseFloat(card.querySelector('.app-cost-monthly').value),
+                    yearly: parseFloat(card.querySelector('.app-cost-yearly').value),
+                    currency: card.querySelector('.app-currency').value
                 }
             });
         });
 
+        // Save Templates
+        document.querySelectorAll('#template-list .item-card').forEach(card => {
+            const checkedAppIds = Array.from(card.querySelectorAll('.template-apps-list input:checked')).map(input => parseInt(input.value));
+            newData.config.templates.push({
+                name: card.querySelector('.template-name').value,
+                appIds: checkedAppIds
+            });
+        });
+
         // Trigger download
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(updatedData, null, 2));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", "data.json");
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-    }
-
-    saveJsonBtn.addEventListener('click', saveData);
-
-    loadInitialJson();
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(newData, null, 2));
+        const a = document.createElement('a');
+        a.href = dataStr;
+        a.download = 'data.json';
+        a.click();
+    });
 });
