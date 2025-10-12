@@ -2,21 +2,61 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tech Stack JSON Editor</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; }
-        .editor-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
-        input, select, textarea { width: 95%; padding: 8px; margin-bottom: 10px; }
-        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; cursor: pointer; }
-    </style>
+    <link rel="stylesheet" href="editor.style.css">
 </head>
 <body>
-    <h1>Tech Stack JSON Editor</h1>
-    
-    <div id="editor-forms">
+
+    <header>
+        <h1>Tech Stack JSON Editor ✨</h1>
+        <p>Load, edit, and generate your <code>data.json</code> file.</p>
+    </header>
+
+    <main>
+        <div class="editor-section file-controls">
+            <h2>Step 1: Load Data</h2>
+            <label for="jsonFileInput">Load your existing <code>data.json</code> file to begin:</label>
+            <input type="file" id="jsonFileInput" accept=".json">
         </div>
-    
-    <button id="saveJsonBtn">Generate and Download JSON</button>
+
+        <div id="editor-content" class="hidden">
+            <div class="editor-section">
+                <h2>Global Config</h2>
+                <div id="config-editor"></div>
+            </div>
+
+            <div class="editor-section">
+                <h2>Themes</h2>
+                <div id="theme-list"></div>
+                <button id="addThemeBtn" class="add-btn">＋ Add Theme</button>
+            </div>
+
+            <div class="editor-section">
+                <h2>Categories</h2>
+                <div id="category-list"></div>
+                <button id="addCategoryBtn" class="add-btn">＋ Add Category</button>
+            </div>
+            
+            <div class="editor-section">
+                <h2>Apps</h2>
+                <div id="app-list"></div>
+                <button id="addAppBtn" class="add-btn">＋ Add App</button>
+            </div>
+
+            <div class="editor-section">
+                <h2>Stack Templates</h2>
+                <div id="template-list"></div>
+                <button id="addTemplateBtn" class="add-btn">＋ Add Template</button>
+            </div>
+
+            <div class="editor-section save-controls">
+                <h2>Step 5: Save Changes</h2>
+                <button id="saveJsonBtn">Generate and Download <code>data.json</code></button>
+            </div>
+        </div>
+    </main>
+
     <script src="editor.js"></script>
 </body>
 </html>
