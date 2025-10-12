@@ -48,6 +48,7 @@ h1, h2, h3 {
 
 h2 { margin-top: 0; }
 h3 { margin-top: 20px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+h4 { margin-top: 15px; margin-bottom: 10px; }
 
 label {
     display: block;
@@ -116,6 +117,7 @@ textarea {
     height: 30px;
     padding: 0;
     border: none;
+    cursor: pointer;
 }
 .color-input-group {
     display: flex;
@@ -130,9 +132,11 @@ textarea {
     border: 1px solid #ccc;
     padding: 10px;
     border-radius: 6px;
+    background-color: #fff;
 }
 .template-app-item {
     display: block;
+    padding: 2px 0;
 }
 
 /* Buttons */
