@@ -281,7 +281,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         aiOutputText.textContent = 'Thinking...';
         try {
             if (!aiSummarizer) {
-                // Lazy-load the AI model on first use
                 const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
                 aiSummarizer = await pipeline('summarization', 'Xenova/distilbart-cnn-6-6');
             }
@@ -323,42 +322,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- PDF GENERATION ---
-    async function generatePDF() {
+    function generatePDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const now = new Date();
         const isYearly = costToggle.checked;
+        const margin = 15;
+        const page_width = doc.internal.pageSize.getWidth();
 
-        // Header
-        if (preparerLogo) { doc.addImage(preparerLogo, 'PNG', 15, 15, 30, 30); }
-        doc.setFontSize(20).setFont(undefined, 'bold');
-        doc.text(document.getElementById('preparerName').value, 105, 25, { align: 'center' });
+        // Header Section
+        if (preparerLogo) { doc.addImage(preparerLogo, 'PNG', margin, margin, 25, 25); }
+        doc.setFontSize(16).setFont(undefined, 'bold');
+        doc.text(document.getElementById('preparerName').value, margin, margin + 30);
         doc.setFontSize(10).setFont(undefined, 'normal');
-        doc.text(document.getElementById('preparerAddress').value.split('\n'), 105, 32, { align: 'center' });
-        doc.setFontSize(26).setFont(undefined, 'bold').text('Tech Stack Proposal', 195, 25, { align: 'right' });
-        
-        // Client Info & Dates
-        doc.setLineWidth(0.5).line(15, 55, 195, 55);
-        doc.setFontSize(12).setFont(undefined, 'bold').text('Prepared For:', 15, 65);
-        doc.setFont(undefined, 'normal');
-        doc.text(document.getElementById('clientName').value, 15, 72);
-        doc.text(document.getElementById('clientAddress').value.split('\n'), 15, 79);
+        doc.text(document.getElementById('preparerAddress').value.split('\n'), margin, margin + 37);
+
+        doc.setFontSize(11).setFont(undefined, 'bold');
+        doc.text("Prepared For:", page_width - margin, margin, { align: 'right' });
+        doc.setFontSize(10).setFont(undefined, 'normal');
+        doc.text(document.getElementById('clientName').value, page_width - margin, margin + 7, { align: 'right' });
+        doc.text(document.getElementById('clientAddress').value.split('\n'), page_width - margin, margin + 14, { align: 'right' });
+
         doc.autoTable({
             body: [['Date:', now.toLocaleDateString()], ['Currency:', selectedCurrency]],
-            startY: 65, margin: { left: 140 }, theme: 'plain', styles: { fontSize: 10 }
+            startY: margin + 25,
+            margin: { left: page_width - 70 },
+            theme: 'plain',
+            styles: { fontSize: 10, cellPadding: 1 },
+            tableWidth: 'wrap'
         });
 
-        // Table
+        // Main Content Table
+        doc.setLineWidth(0.5).line(margin, 80, page_width - margin, 80);
         const tableColumns = ["Item & Description", "Billing Cycle", "Amount"];
         const tableRows = techStack.map(app => {
             const cost = isYearly ? app.cost.yearly : app.cost.monthly;
             const convertedCost = convertCurrency(cost, app.cost.currency);
             return [ `${app.name}\n${app.description}`, isYearly ? 'Annual' : 'Monthly', `${convertedCost.toFixed(2)}` ];
         });
-        doc.autoTable({ head: [tableColumns], body: tableRows, startY: 95 });
 
-        // Totals & Pie Chart
-        let finalY = doc.autoTable.previous.finalY + 10;
+        doc.autoTable({
+            head: [tableColumns],
+            body: tableRows,
+            startY: 85,
+            theme: 'striped',
+            headStyles: { fillColor: [40, 167, 69] },
+            didParseCell: (data) => {
+                if (data.column.index === 0 && data.row.section === 'body') {
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            }
+        });
+
+        // Footer Section
+        let finalY = doc.autoTable.previous.finalY;
         const total = techStack.reduce((sum, app) => sum + convertCurrency(isYearly ? app.cost.yearly : app.cost.monthly, app.cost.currency), 0);
         
         const categoryTotals = appData.categories.reduce((acc, cat) => {
@@ -374,13 +391,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         const chartUrl = config.apis.pieChart
             .replace('{labels}', encodeURIComponent(JSON.stringify(chartLabels)))
             .replace('{data}', encodeURIComponent(JSON.stringify(chartData)));
-        
-        const saveDoc = () => {
+
+        const addTotalsAndSave = (chartImage = null) => {
+            if (chartImage) {
+                doc.addImage(chartImage, 'PNG', margin, finalY + 10, 80, 40);
+            }
+            doc.autoTable({
+                body: [['Total:', `${selectedCurrency} ${total.toFixed(2)}`]],
+                startY: finalY + 10,
+                margin: { left: page_width - 70 },
+                theme: 'plain',
+                styles: { fontSize: 12, fontStyle: 'bold', cellPadding: 1 },
+                tableWidth: 'wrap'
+            });
+
             const notes = document.getElementById('notes').value;
             if (notes) {
-                let notesY = doc.autoTable.previous.finalY > finalY + 50 ? doc.autoTable.previous.finalY : finalY + 50;
-                doc.setFontSize(10).setFont(undefined, 'bold').text('Notes:', 15, notesY);
-                doc.setFont(undefined, 'normal').text(notes, 15, notesY + 5, { maxWidth: 180 });
+                let notesY = finalY + (chartImage ? 60 : 30);
+                doc.setFontSize(10).setFont(undefined, 'bold').text('Notes:', margin, notesY);
+                doc.setFont(undefined, 'normal').text(notes, margin, notesY + 5, { maxWidth: 180 });
             }
             doc.save(`${document.getElementById('clientName').value || 'TechStack'}_Proposal.pdf`);
         };
@@ -391,18 +420,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .then(blob => {
                     const reader = new FileReader();
                     reader.readAsDataURL(blob);
-                    reader.onloadend = () => {
-                        const base64data = reader.result;
-                        doc.addImage(base64data, 'PNG', 15, finalY, 80, 40);
-                        doc.setFontSize(12).setFont(undefined, 'bold').text('Total:', 140, finalY + 20, { align: 'right' });
-                        doc.text(`${selectedCurrency} ${total.toFixed(2)}`, 195, finalY + 20, { align: 'right' });
-                        saveDoc();
-                    };
-                }).catch(saveDoc); // Save without chart if fetch fails
+                    reader.onloadend = () => addTotalsAndSave(reader.result);
+                }).catch(() => addTotalsAndSave()); // Save without chart if fetch fails
         } else {
-            doc.setFontSize(12).setFont(undefined, 'bold').text('Total:', 140, finalY + 20, { align: 'right' });
-            doc.text(`${selectedCurrency} ${total.toFixed(2)}`, 195, finalY + 20, { align: 'right' });
-            saveDoc();
+            addTotalsAndSave(); // No data for chart, just save
         }
     }
     
