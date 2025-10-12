@@ -84,7 +84,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const theme = config.themes[themeIndex];
         document.documentElement.style.setProperty('--font-family', theme.fontFamily);
         const mode = darkModeToggle.checked ? 'dark' : 'light';
-        for (const [key, value] of Object.entries(theme[mode])) {
+        const colors = { ...theme.light, ...theme.dark, ...theme[mode] };
+        for (const [key, value] of Object.entries(colors)) {
             document.documentElement.style.setProperty(`--${key}-color`, value);
         }
         localStorage.setItem('selectedTheme', themeIndex);
@@ -105,7 +106,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             currencyRates = data[config.currencies.default.toLowerCase()];
         } catch (error) {
             console.error('Could not fetch currency rates, using fallback.', error);
-            // Fallback for offline or API failure
             config.currencies.supported.forEach(c => currencyRates[c.toLowerCase()] = 1);
         }
     }
@@ -119,11 +119,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         fromCurrency = fromCurrency.toLowerCase();
         const toCurrency = selectedCurrency.toLowerCase();
         
-        const rate = currencyRates[fromCurrency] || 1;
-        const amountInBase = amount / rate;
-        const targetRate = currencyRates[toCurrency] || 1;
+        const rateFrom = currencyRates[fromCurrency] || 1;
+        const amountInBase = amount / rateFrom;
+        const rateTo = currencyRates[toCurrency] || 1;
         
-        return amountInBase * targetRate;
+        return amountInBase * rateTo;
     }
     
     // --- CORE APP LOGIC ---
@@ -141,6 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function populateApps() {
         appSelectionArea.innerHTML = '';
+        const defaultIcon = config.apis.iconRetrieve.replace('{icon}', 'mdi:apps');
         appData.apps
             .filter(app => activeCategories.has(app.category))
             .forEach(app => {
@@ -148,8 +149,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 appDiv.className = 'app-item';
                 appDiv.draggable = true;
                 appDiv.dataset.appId = app.id;
-                appDiv.innerHTML = `<img src="${config.apis.iconRetrieve.replace('{icon}', 'simple-icons:atlassian')}" alt=""><span>${app.name}</span>`;
-                appDiv.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', e.target.dataset.appId));
+                appDiv.innerHTML = `<img src="${defaultIcon}" alt=""><span>${app.name}</span>`;
+                appDiv.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', app.id));
                 appSelectionArea.appendChild(appDiv);
             });
     }
@@ -166,6 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderTechStack() {
         stackRowsDiv.innerHTML = '';
+        const defaultIcon = config.apis.iconRetrieve.replace('{icon}', 'mdi:apps');
         techStack.forEach(app => {
             const isYearly = costToggle.checked;
             const cost = isYearly ? app.cost.yearly : app.cost.monthly;
@@ -176,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             row.className = 'stack-row';
             row.innerHTML = `
                 <div class="stack-row-item stack-app-name">
-                    <img src="${config.apis.iconRetrieve.replace('{icon}', 'simple-icons:atlassian')}" alt="">
+                    <img src="${defaultIcon}" alt="${app.name} icon">
                     <span>${app.name}</span>
                 </div>
                 <div class="stack-row-item"><p>${app.description}</p></div>
@@ -214,7 +216,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const a = document.createElement('a');
         a.href = url;
         a.download = `${state.clientName || 'stack'}-project.json`;
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
     
@@ -223,15 +227,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!file) return;
         const reader = new FileReader();
         reader.onload = e => {
-            const state = JSON.parse(e.target.result);
-            document.getElementById('preparerName').value = state.preparerName;
-            document.getElementById('preparerAddress').value = state.preparerAddress;
-            document.getElementById('clientName').value = state.clientName;
-            document.getElementById('clientAddress').value = state.clientAddress;
-            document.getElementById('notes').value = state.notes;
-            techStack = appData.apps.filter(app => state.techStackIds.includes(app.id));
-            builderDiv.classList.remove('hidden');
-            renderTechStack();
+            try {
+                const state = JSON.parse(e.target.result);
+                document.getElementById('preparerName').value = state.preparerName || '';
+                document.getElementById('preparerAddress').value = state.preparerAddress || '';
+                document.getElementById('clientName').value = state.clientName || '';
+                document.getElementById('clientAddress').value = state.clientAddress || '';
+                document.getElementById('notes').value = state.notes || '';
+                techStack = appData.apps.filter(app => state.techStackIds && state.techStackIds.includes(app.id));
+                builderDiv.classList.remove('hidden');
+                renderTechStack();
+            } catch (err) {
+                alert('Invalid project file.');
+            }
         };
         reader.readAsText(file);
     }
@@ -277,10 +285,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
                 aiSummarizer = await pipeline('summarization', 'Xenova/distilbart-cnn-6-6');
             }
-            const output = await aiSummarizer(text, {
-                max_new_tokens: 50,
-                min_new_tokens: 10
-            });
+            const output = await aiSummarizer(text, { max_new_tokens: 50, min_new_tokens: 10 });
             aiOutputText.textContent = output[0].summary_text;
         } catch (error) {
             console.error('AI summarization failed:', error);
@@ -288,11 +293,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    async function searchIcons() {
+    async function searchIcons(event) {
+        if (event.key !== 'Enter') return;
         const query = iconSearchInput.value;
         if (query.length < 3) return;
         
-        const url = config.apis.iconSearch.replace('{query}', query);
+        const url = config.apis.iconSearch.replace('{query}', encodeURIComponent(query));
         const response = await fetch(url);
         const data = await response.json();
 
@@ -363,32 +369,40 @@ document.addEventListener('DOMContentLoaded', async () => {
             return acc;
         }, {});
         
-        const chartLabels = Object.keys(categoryTotals).join(',');
-        const chartData = Object.values(categoryTotals).join(',');
-        const chartUrl = config.apis.pieChart.replace('{labels}', `'${chartLabels.replace(/,/g, `','`)}'`).replace('{data}', chartData);
+        const chartLabels = Object.keys(categoryTotals);
+        const chartData = Object.values(categoryTotals);
+        const chartUrl = config.apis.pieChart
+            .replace('{labels}', encodeURIComponent(JSON.stringify(chartLabels)))
+            .replace('{data}', encodeURIComponent(JSON.stringify(chartData)));
         
-        try {
-            const response = await fetch(chartUrl);
-            const blob = await response.blob();
-            const reader = new FileReader();
-            reader.readAsDataURL(blob);
-            reader.onloadend = () => {
-                const base64data = reader.result;
-                doc.addImage(base64data, 'PNG', 15, finalY, 80, 40);
-                doc.setFontSize(12).setFont(undefined, 'bold').text('Total:', 140, finalY + 20, { align: 'right' });
-                doc.text(`${selectedCurrency} ${total.toFixed(2)}`, 195, finalY + 20, { align: 'right' });
-                
-                // Notes & Final Save
-                const notes = document.getElementById('notes').value;
-                if (notes) {
-                    doc.setFontSize(10).setFont(undefined, 'bold').text('Notes:', 15, finalY + 50);
-                    doc.setFont(undefined, 'normal').text(notes, 15, finalY + 55, { maxWidth: 180 });
-                }
-                doc.save(`${document.getElementById('clientName').value || 'TechStack'}_Proposal.pdf`);
-            };
-        } catch (e) {
-             // Fallback if chart fails
-             doc.save(`${document.getElementById('clientName').value || 'TechStack'}_Proposal.pdf`);
+        const saveDoc = () => {
+            const notes = document.getElementById('notes').value;
+            if (notes) {
+                let notesY = doc.autoTable.previous.finalY > finalY + 50 ? doc.autoTable.previous.finalY : finalY + 50;
+                doc.setFontSize(10).setFont(undefined, 'bold').text('Notes:', 15, notesY);
+                doc.setFont(undefined, 'normal').text(notes, 15, notesY + 5, { maxWidth: 180 });
+            }
+            doc.save(`${document.getElementById('clientName').value || 'TechStack'}_Proposal.pdf`);
+        };
+        
+        if (chartData.length > 0) {
+            fetch(chartUrl)
+                .then(response => response.blob())
+                .then(blob => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(blob);
+                    reader.onloadend = () => {
+                        const base64data = reader.result;
+                        doc.addImage(base64data, 'PNG', 15, finalY, 80, 40);
+                        doc.setFontSize(12).setFont(undefined, 'bold').text('Total:', 140, finalY + 20, { align: 'right' });
+                        doc.text(`${selectedCurrency} ${total.toFixed(2)}`, 195, finalY + 20, { align: 'right' });
+                        saveDoc();
+                    };
+                }).catch(saveDoc); // Save without chart if fetch fails
+        } else {
+            doc.setFontSize(12).setFont(undefined, 'bold').text('Total:', 140, finalY + 20, { align: 'right' });
+            doc.text(`${selectedCurrency} ${total.toFixed(2)}`, 195, finalY + 20, { align: 'right' });
+            saveDoc();
         }
     }
     
@@ -437,15 +451,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // Modal Listeners
-        // This is a simplified way to add an icon picker; a more robust solution would be better
         document.body.addEventListener('click', e => {
-            if (e.target.classList.contains('category-icon-btn')) {
-                currentCategoryToUpdate = e.target.dataset.category;
+            const iconButton = e.target.closest('.category-icon-btn');
+            if (iconButton) {
+                currentCategoryToUpdate = iconButton.dataset.category;
                 iconModal.classList.remove('hidden');
+                iconSearchInput.focus();
             }
         });
-        iconSearchInput.addEventListener('keyup', searchIcons);
+        iconSearchInput.addEventListener('keydown', searchIcons);
         iconModal.querySelector('.close-btn').addEventListener('click', () => iconModal.classList.add('hidden'));
+        iconModal.addEventListener('click', (e) => {
+            if (e.target === iconModal) {
+                 iconModal.classList.add('hidden');
+            }
+        });
     }
 
     init();
