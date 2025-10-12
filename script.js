@@ -17,8 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch data from JSON file
     async function loadData() {
         try {
-            // FIX APPLIED HERE: Path changed from 'data.json' to './data.json'
-            const response = await fetch('./data.json');
+            const response = await fetch('data.json');
             techData = await response.json();
             populateCategories();
         } catch (error) {
@@ -122,13 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Event Listeners
     startBtn.addEventListener('click', () => {
-        if (businessNameInput.value.trim() === "") {
-            alert("Please enter a business name to start.");
-            return;
-        }
         builderDiv.classList.remove('hidden');
-        startBtn.style.display = 'none';
-        businessNameInput.style.display = 'none';
     });
 
     costToggle.addEventListener('change', () => {
@@ -146,42 +139,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const businessName = businessNameInput.value || "My Business";
         const title = `${businessName}'s Tech Stack`;
         const isYearly = costToggle.checked;
-        const costType = isYearly ? 'Yearly Cost' : 'Monthly Cost';
+        const costType = isYearly ? 'Yearly' : 'Monthly';
 
         doc.setFontSize(22);
         doc.text(title, 105, 20, { align: 'center' });
 
-        const tableColumn = ["Category", "App", costType];
+        const tableColumn = ["Category", "App", "Description", `Cost (${costType})`];
         const tableRows = [];
-        
-        // Group apps by category for the PDF
-        const groupedApps = techStack.reduce((acc, app) => {
-            (acc[app.category] = acc[app.category] || []).push(app);
-            return acc;
-        }, {});
 
-        for (const category in groupedApps) {
-            const appsInCategory = groupedApps[category];
-            appsInCategory.forEach(app => {
-                 const cost = isYearly ? app.cost.yearly : app.cost.monthly;
-                 tableRows.push([app.category, app.name, `$${cost.toFixed(2)}`]);
-            });
-        }
+        techStack.forEach(app => {
+            const cost = isYearly ? app.cost.yearly : app.cost.monthly;
+            const appData = [app.category, app.name, app.description, `$${cost.toFixed(2)}`];
+            tableRows.push(appData);
+        });
         
         const totalCost = totalCostEl.textContent;
+        tableRows.push(['', '', 'Total', totalCost]);
 
         doc.autoTable({
             head: [tableColumn],
             body: tableRows,
             startY: 30,
-            theme: 'striped',
+            theme: 'grid',
             styles: { fontSize: 10 },
-            headStyles: { fillColor: [40, 167, 69] },
-            didDrawPage: function (data) {
-                // Footer
-                doc.setFontSize(12);
-                doc.text('Total Cost: ' + totalCost, data.settings.margin.left, doc.internal.pageSize.height - 10);
-            }
+            headStyles: { fillColor: [22, 160, 133] },
+            foot: [['', '', 'Total', totalCost]],
+            footStyles: { fontStyle: 'bold' }
         });
 
         doc.save(`${businessName}_Tech_Stack.pdf`);
