@@ -48,17 +48,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- BUILDER FUNCTIONS ---
 
     function buildConfigEditor() {
-        configEditorDiv.innerHTML = '<h3>API URLs</h3>';
+        configEditorDiv.innerHTML = '<h3>UI Text</h3>';
+        const textFields = ['pageTitle', 'headerTitle', 'headerSubtitle', 'startButtonText', 'exportButtonText'];
+        textFields.forEach(key => {
+            configEditorDiv.innerHTML += `
+                <label for="config-text-${key}">${key}</label>
+                <input type="text" id="config-text-${key}" value="${fullData.config[key] || ''}" data-config-key="${key}">
+            `;
+        });
+        
+        configEditorDiv.innerHTML += '<h3>API URLs</h3>';
         for (const key in fullData.config.apis) {
             configEditorDiv.innerHTML += `
                 <label for="config-api-${key}">${key}</label>
                 <input type="text" id="config-api-${key}" value="${fullData.config.apis[key]}" data-config-type="api" data-key="${key}">
             `;
         }
+
         configEditorDiv.innerHTML += '<h3>Currencies</h3>';
+        const supportedCurrencies = fullData.config.currencies.supported.join(', ');
+        const currencyOptions = fullData.config.currencies.supported.map(c => `<option value="${c}" ${c === fullData.config.currencies.default ? 'selected' : ''}>${c}</option>`).join('');
         configEditorDiv.innerHTML += `
             <label for="config-currencies">Supported Currencies (comma-separated)</label>
-            <input type="text" id="config-currencies" value="${fullData.config.currencies.supported.join(', ')}">
+            <input type="text" id="config-currencies" value="${supportedCurrencies}">
+            <label for="config-default-currency">Default Currency</label>
+            <select id="config-default-currency">${currencyOptions}</select>
         `;
     }
 
@@ -100,6 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="delete-btn" onclick="deleteItem('category', ${index})">×</button>
                 <label>Category Name</label>
                 <input type="text" value="${cat.name}" class="cat-name">
+                <label>Description</label>
+                <input type="text" value="${cat.description}" class="cat-desc">
                 <label>Icon (from iconify, e.g., mdi:database)</label>
                 <input type="text" value="${cat.icon}" class="cat-icon">
             `;
@@ -124,7 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <label>Yearly Cost</label><input type="number" step="0.01" value="${app.cost.yearly}" class="app-cost-yearly">
                 <label>Currency</label><select class="app-currency">${currencyOptions}</select>
             `;
-            // Set selected options
             div.querySelector('.app-cat').value = app.category;
             div.querySelector('.app-currency').value = app.cost.currency;
             appListDiv.appendChild(div);
@@ -149,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <label>Included Apps</label>
                 <div class="template-apps-list">${appCheckboxes}</div>
             `;
-            // Check the correct boxes
             template.appIds.forEach(id => {
                 const checkbox = div.querySelector(`input[value="${id}"]`);
                 if(checkbox) checkbox.checked = true;
@@ -165,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (type === 'category') fullData.categories.splice(index, 1);
             if (type === 'app') fullData.apps.splice(index, 1);
             if (type === 'template') fullData.config.templates.splice(index, 1);
-            buildFullEditor(); // Re-render everything
+            buildFullEditor();
         }
     };
     
@@ -174,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         buildThemesEditor();
     });
     addCategoryBtn.addEventListener('click', () => {
-        fullData.categories.push({ name: "New Category", icon: "mdi:help-box" });
+        fullData.categories.push({ name: "New Category", description: "", icon: "mdi:help-box" });
         buildCategoriesEditor();
     });
     addAppBtn.addEventListener('click', () => {
@@ -191,14 +205,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const newData = { config: { apis: {}, currencies: {}, themes: [], templates: [] }, categories: [], apps: [] };
 
         // Save Config
-        document.querySelectorAll('#config-editor input').forEach(input => {
-            if (input.dataset.configType === 'api') {
-                newData.config.apis[input.dataset.key] = input.value;
-            } else if (input.id === 'config-currencies') {
-                newData.config.currencies.supported = input.value.split(',').map(c => c.trim());
-            }
+        document.querySelectorAll('#config-editor input[data-config-key]').forEach(input => {
+            newData.config[input.dataset.configKey] = input.value;
         });
-        newData.config.currencies.default = fullData.config.currencies.default; // Preserve default
+        document.querySelectorAll('#config-editor input[data-config-type="api"]').forEach(input => {
+            newData.config.apis[input.dataset.key] = input.value;
+        });
+        newData.config.currencies.supported = document.getElementById('config-currencies').value.split(',').map(c => c.trim());
+        newData.config.currencies.default = document.getElementById('config-default-currency').value;
 
         // Save Themes
         document.querySelectorAll('#theme-list .item-card').forEach(card => {
@@ -214,6 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('#category-list .item-card').forEach(card => {
             newData.categories.push({
                 name: card.querySelector('.cat-name').value,
+                description: card.querySelector('.cat-desc').value,
                 icon: card.querySelector('.cat-icon').value
             });
         });
@@ -221,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Save Apps
         document.querySelectorAll('#app-list .item-card').forEach((card, index) => {
             newData.apps.push({
-                id: fullData.apps[index].id, // Preserve original ID
+                id: fullData.apps[index]?.id || Date.now(),
                 name: card.querySelector('.app-name').value,
                 category: card.querySelector('.app-cat').value,
                 description: card.querySelector('.app-desc').value,
