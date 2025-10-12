@@ -3,58 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Stack Sandwich Builder</title>
+    <title id="pageTitle">Tech Stack Builder</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1"></script>
 </head>
 <body>
 
     <header>
-        <h1>Tech Stack Sandwich Builder 🥪</h1>
-        <p>Build your business's tech stack as easily as making a sandwich.</p>
+        <h1 id="headerTitle"></h1>
+        <p id="headerSubtitle"></p>
+        <div class="header-controls">
+            <div class="theme-switcher">
+                <span>Dark Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="theme-selector">
+                <label for="themeSelector">Theme:</label>
+                <select id="themeSelector"></select>
+            </div>
+        </div>
     </header>
 
     <main>
-        <div class="controls">
-            <input type="text" id="businessName" placeholder="Enter Your Business Name">
-            <button id="startBtn">Make a Tech Stack</button>
+        <div class="card">
+            <h2>Session Management</h2>
+            <div class="session-controls">
+                <button id="saveStackBtn">💾 Save Stack</button>
+                <label for="loadStackInput" class="button-like-label">📤 Load Stack</label>
+                <input type="file" id="loadStackInput" accept=".json" style="display: none;">
+                <button id="shareStackBtn">🔗 Generate Share Link</button>
+            </div>
+        </div>
+
+        <div class="controls card">
+            <h2>Preparer Information</h2>
+            <input type="text" id="preparerName" placeholder="Your Name / Company Name">
+            <textarea id="preparerAddress" placeholder="Your Company Address"></textarea>
+            <label for="logoUpload">Upload Logo (Optional)</label>
+            <input type="file" id="logoUpload" accept="image/png, image/jpeg">
+        </div>
+
+        <div class="controls card">
+            <h2>Client & Stack Setup</h2>
+            <input type="text" id="clientName" placeholder="Client Company Name">
+            <textarea id="clientAddress" placeholder="Client Company Address"></textarea>
+             <label for="templateSelector">Load a Template (Optional):</label>
+            <select id="templateSelector">
+                <option value="">-- Select a Template --</option>
+            </select>
+            <button id="startBtn"></button>
         </div>
 
         <div id="builder" class="hidden">
-            <h2>Step 1: Choose Your Ingredients (Categories)</h2>
-            <div id="categoryToggles"></div>
+            <div class="card">
+                <h2>Step 1: Choose Categories</h2>
+                <div id="categoryToggles"></div>
+            </div>
 
-            <h2>Step 2: Add Apps to Your Stack</h2>
-            <div id="app-selection-area">
-                </div>
-
-            <h2>Step 3: Review Your Tech Stack Sandwich</h2>
-            <div id="tech-stack-table">
-                <div class="table-header">
-                    <div class="header-item">Category / App</div>
-                    <div class="header-item">Description</div>
-                    <div class="header-item">
-                        Cost
+            <div class="card">
+                <h2>Step 2: Add Apps to Stack</h2>
+                <div id="app-selection-area"></div>
+            </div>
+            
+            <div class="card">
+                <h2>Step 3: Review Your Tech Stack</h2>
+                <div class="toolbar">
+                    <label for="currencySelector">Display Currency:</label>
+                    <select id="currencySelector"></select>
+                    <label class="cost-toggle-label">
+                        <span>Monthly</span>
                         <label class="switch">
                             <input type="checkbox" id="costToggle">
                             <span class="slider round"></span>
                         </label>
-                        <span id="toggleLabel">Monthly</span>
-                    </div>
+                        <span>Annual</span>
+                    </label>
                 </div>
-                <div id="stack-rows" class="droppable">
+                <div id="tech-stack-table">
+                    <div class="table-header">
+                        <div class="header-item">Category / App</div>
+                        <div class="header-item">Description</div>
+                        <div class="header-item">Cost</div>
                     </div>
-                <div class="table-footer">
-                    <div class="footer-item">Total:</div>
-                    <div class="footer-item" id="totalCost">$0.00</div>
+                    <div id="stack-rows" class="droppable">
+                        </div>
+                    <div class="table-footer">
+                        <div class="footer-item">Total:</div>
+                        <div class="footer-item" id="totalCost">$0.00</div>
+                    </div>
                 </div>
             </div>
-            
-            <button id="exportPdfBtn">Export as PDF</button>
+
+            <div class="card">
+                <h2>Step 4: AI Description Adjuster</h2>
+                <textarea id="aiInputText" placeholder="Write or paste a description here..."></textarea>
+                <button id="aiAdjustBtn">✨ Adjust Description</button>
+                <div id="aiOutputText" class="ai-output"></div>
+            </div>
+
+            <div class="card">
+                <h2>Step 5: Add Notes & Export</h2>
+                <textarea id="notes" placeholder="Add any notes, terms, or conditions for the PDF..."></textarea>
+                <button id="exportPdfBtn"></button>
+            </div>
         </div>
     </main>
 
-    <script src="script.js"></script>
+    <div id="iconModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Search for an Icon</h2>
+            <input type="text" id="iconSearchInput" placeholder="e.g., 'database', 'security'...">
+            <div id="iconResults"></div>
+        </div>
+    </div>
 </body>
+<script src="script.js"></script>
 </html>
