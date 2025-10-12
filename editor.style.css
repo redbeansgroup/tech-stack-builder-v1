@@ -42,17 +42,25 @@ input[type="file"] {
     margin-top: 10px;
 }
 
-h1, h2 {
+h1, h2, h3 {
     color: #1d1d1f;
 }
 
-h2 {
-    margin-top: 0;
+h2 { margin-top: 0; }
+h3 { margin-top: 20px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
 }
 
 /* Form Inputs */
 input[type="text"],
 input[type="number"],
+input[type="color"],
 select,
 textarea {
     width: 100%;
@@ -69,17 +77,13 @@ textarea {
     resize: vertical;
 }
 
-.category-item, .app-card {
+.item-card {
     position: relative;
-    padding: 15px;
+    padding: 20px;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     margin-bottom: 15px;
     background-color: #fafafa;
-}
-
-.app-card {
-    padding-top: 25px;
 }
 
 .delete-btn {
@@ -99,6 +103,36 @@ textarea {
 }
 .delete-btn:hover {
     background: #e60000;
+}
+
+/* Theme Editor Specific */
+.theme-card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.theme-colors input[type="color"] {
+    width: 50px;
+    height: 30px;
+    padding: 0;
+    border: none;
+}
+.color-input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Template Editor Specific */
+.template-apps-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 6px;
+}
+.template-app-item {
+    display: block;
 }
 
 /* Buttons */
