@@ -10,452 +10,124 @@
     { "name": "Finance" },
     { "name": "Project Management" },
     { "name": "Social Media" },
+    { "name": "Education" },
     { "name": "E-commerce" },
     { "name": "SEO" },
     { "name": "Customer Support" },
     { "name": "Human Resources" },
-    { "name": "Sales" },
-    { "name": "Legal" }
+    { "name": "Sales" }
   ],
   "apps": [
     {
       "id": 1,
       "name": "Hostinger AI Website Builder",
       "category": "Website Builders",
-      "description": "Create websites with AI content and SEO.",
-      "icon": "icons/sunshine.png",
+      "description": "Create websites with AI content.",
+      "icon": "icons/hostinger.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     },
     {
       "id": 2,
       "name": "Wix ADI",
       "category": "Website Builders",
-      "description": "AI-driven design tool for professional websites.",
-      "icon": "icons/sunshine.png",
+      "description": "AI-driven design tool.",
+      "icon": "icons/wix.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     },
     {
       "id": 3,
-      "name": "Durable.co",
-      "category": "Website Builders",
-      "description": "Rapid website, brand, and invoice creation.",
-      "icon": "icons/sunshine.png",
+      "name": "HubSpot",
+      "category": "Marketing",
+      "description": "Unify marketing, sales, and CRM.",
+      "icon": "icons/hubspot.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     },
     {
       "id": 4,
-      "name": "Bubble",
-      "category": "Website Builders",
-      "description": "Build AI-powered apps without coding.",
-      "icon": "icons/sunshine.png",
+      "name": "Copy.ai",
+      "category": "Marketing",
+      "description": "AI for high-quality content.",
+      "icon": "icons/copyai.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     },
     {
       "id": 5,
-      "name": "Framer AI",
-      "category": "Website Builders",
-      "description": "Revolutionize web design with AI assistance.",
-      "icon": "icons/sunshine.png",
+      "name": "Booke AI",
+      "category": "Finance",
+      "description": "AI-driven automated bookkeeping.",
+      "icon": "icons/bookeai.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     },
     {
       "id": 6,
-      "name": "HubSpot",
-      "category": "Marketing",
-      "description": "Unify marketing, sales, and CRM.",
-      "icon": "icons/sunshine.png",
+      "name": "ClickUp",
+      "category": "Project Management",
+      "description": "Streamline tasks and collaboration.",
+      "icon": "icons/clickup.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     },
     {
       "id": 7,
-      "name": "Copy.ai",
-      "category": "Marketing",
-      "description": "AI-driven for effortless content generation.",
-      "icon": "icons/sunshine.png",
+      "name": "Asana",
+      "category": "Project Management",
+      "description": "Manage projects and automate tasks.",
+      "icon": "icons/asana.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     },
     {
       "id": 8,
-      "name": "Writesonic",
-      "category": "Marketing",
-      "description": "AI for content, visuals, and insights.",
-      "icon": "icons/sunshine.png",
+      "name": "Sprout Social",
+      "category": "Social Media",
+      "description": "Manage content and get insights.",
+      "icon": "icons/sproutsocial.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     },
     {
       "id": 9,
-      "name": "Namelix",
-      "category": "Marketing",
-      "description": "Generates memorable, brandable business names.",
-      "icon": "icons/sunshine.png",
+      "name": "Grammarly",
+      "category": "Education",
+      "description": "Real-time grammar and tone checks.",
+      "icon": "icons/grammarly.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     },
     {
       "id": 10,
-      "name": "Canva Text to Image",
-      "category": "Marketing",
-      "description": "Transform text into stunning visuals.",
-      "icon": "icons/sunshine.png",
+      "name": "Shopify",
+      "category": "E-commerce",
+      "description": "Build and manage online stores.",
+      "icon": "icons/shopify.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     },
     {
       "id": 11,
-      "name": "Zapier",
-      "category": "Marketing",
-      "description": "Streamline tasks with code-free integrations.",
-      "icon": "icons/sunshine.png",
+      "name": "Surfer",
+      "category": "SEO",
+      "description": "Enhance organic traffic and rankings.",
+      "icon": "icons/surfer.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     },
     {
       "id": 12,
-      "name": "Booke AI",
-      "category": "Finance",
-      "description": "AI-driven automation for bookkeeping.",
-      "icon": "icons/sunshine.png",
+      "name": "Zendesk",
+      "category": "Customer Support",
+      "description": "AI, analytics, and omnichannel support.",
+      "icon": "icons/zendesk.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     },
     {
       "id": 13,
-      "name": "Nanonets",
-      "category": "Finance",
-      "description": "AI-driven data extraction and automation.",
-      "icon": "icons/sunshine.png",
+      "name": "Hirevue",
+      "category": "Human Resources",
+      "description": "AI-driven video interviews.",
+      "icon": "icons/hirevue.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     },
     {
       "id": 14,
-      "name": "Trendspider",
-      "category": "Finance",
-      "description": "AI-powered technical analysis trading tool.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 15,
-      "name": "Composer",
-      "category": "Finance",
-      "description": "AI-driven investing with no-code strategy.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 16,
-      "name": "Monarch Money",
-      "category": "Finance",
-      "description": "Streamline finances with collaboration tools.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 17,
-      "name": "ClickUp",
-      "category": "Project Management",
-      "description": "Streamline tasks, docs, and collaboration.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 18,
-      "name": "Asana",
-      "category": "Project Management",
-      "description": "Manage projects and automate tasks efficiently.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 19,
-      "name": "Trello",
-      "category": "Project Management",
-      "description": "Streamline teamwork with visual boards.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 20,
-      "name": "Notion AI",
-      "category": "Project Management",
-      "description": "AI-powered workspace to write and think.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 21,
-      "name": "Taskade",
-      "category": "Project Management",
-      "description": "Unify team productivity with AI.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 22,
-      "name": "Sprout Social",
-      "category": "Social Media",
-      "description": "Manage content and get insights.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 23,
-      "name": "Buffer",
-      "category": "Social Media",
-      "description": "Automate scheduling and analyze engagement.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 24,
-      "name": "Taplio",
-      "category": "Social Media",
-      "description": "Grow your personal brand on LinkedIn.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 25,
-      "name": "vidIQ",
-      "category": "Social Media",
-      "description": "AI-driven analytics for YouTube success.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 26,
-      "name": "Tweet Hunter",
-      "category": "Social Media",
-      "description": "Elevate Twitter with AI content & CRM.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 27,
-      "name": "Shopify",
-      "category": "E-commerce",
-      "description": "Build and manage online stores easily.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 28,
-      "name": "Flair AI",
-      "category": "E-commerce",
-      "description": "AI-powered digital staging for photos.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 29,
-      "name": "Octane AI",
-      "category": "E-commerce",
-      "description": "Personalized quizzes and data insights.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 30,
-      "name": "Algolia",
-      "category": "E-commerce",
-      "description": "AI-powered search with instant results.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 31,
-      "name": "Maverick",
-      "category": "E-commerce",
-      "description": "Send customers personalized videos at scale.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 32,
-      "name": "Surfer",
-      "category": "SEO",
-      "description": "Enhance organic traffic and rankings.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 33,
-      "name": "Clearscope",
-      "category": "SEO",
-      "description": "AI-driven content optimization tool.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 34,
-      "name": "MarketMuse",
-      "category": "SEO",
-      "description": "AI-driven research, planning, and optimization.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 35,
-      "name": "Frase",
-      "category": "SEO",
-      "description": "AI writing, analysis, and optimization.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 36,
-      "name": "Scalenut",
-      "category": "SEO",
-      "description": "Streamline SEO and content creation.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 37,
-      "name": "Zendesk",
-      "category": "Customer Support",
-      "description": "Omnichannel support with AI and analytics.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 38,
-      "name": "Intercom",
-      "category": "Customer Support",
-      "description": "AI-driven, omnichannel support platform.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 39,
-      "name": "Ada",
-      "category": "Customer Support",
-      "description": "AI customer service across all platforms.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 40,
-      "name": "Chatbase",
-      "category": "Customer Support",
-      "description": "Build an AI chatbot trained on your data.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 41,
-      "name": "Kore.ai",
-      "category": "Customer Support",
-      "description": "Advanced AI solutions for CX.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 42,
-      "name": "Hirevue",
-      "category": "Human Resources",
-      "description": "AI-driven video interviews and hiring.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 43,
-      "name": "Paradox",
-      "category": "Human Resources",
-      "description": "Automate hiring and streamline communication.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 44,
-      "name": "Resume Worded",
-      "category": "Human Resources",
-      "description": "AI-driven resume and LinkedIn feedback.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 45,
-      "name": "Teal Resume Builder",
-      "category": "Human Resources",
-      "description": "Optimize resumes tailored to each job.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 46,
-      "name": "Eightfold",
-      "category": "Human Resources",
-      "description": "AI recruiting and talent management.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 47,
       "name": "Gong",
       "category": "Sales",
       "description": "Actionable insights from sales data.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 48,
-      "name": "Outreach",
-      "category": "Sales",
-      "description": "Optimize sales with AI-powered tools.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 49,
-      "name": "Superhuman",
-      "category": "Sales",
-      "description": "Revolutionize email with AI and speed.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 50,
-      "name": "Reply.io",
-      "category": "Sales",
-      "description": "Automate sales outreach and analyze performance.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 51,
-      "name": "Klenty",
-      "category": "Sales",
-      "description": "Automated outreach and multi-channel engagement.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 52,
-      "name": "Redactable",
-      "category": "Legal",
-      "description": "Automated AI for secure document redaction.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 53,
-      "name": "Casetext",
-      "category": "Legal",
-      "description": "AI for research, document review, and analysis.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 54,
-      "name": "DoNotPay",
-      "category": "Legal",
-      "description": "AI-driven tool for fighting fees.",
-      "icon": "icons/sunshine.png",
-      "cost": { "monthly": 20.00, "yearly": 17.00 }
-    },
-    {
-      "id": 55,
-      "name": "Spellbook",
-      "category": "Legal",
-      "description": "Accelerate contract drafting with AI.",
-      "icon": "icons/sunshine.png",
+      "icon": "icons/gong.png",
       "cost": { "monthly": 20.00, "yearly": 17.00 }
     }
   ]
