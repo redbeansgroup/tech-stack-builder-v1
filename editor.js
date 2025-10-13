@@ -241,10 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleIconSearch(e) {
         if (e.key !== 'Enter') return;
-        if (!iconSearchInput) return;
-
-        const resultsContainer = iconResultsDiv || document.getElementById('iconResults');
-        if (!resultsContainer) return;
+        if (!iconSearchInput || !iconResultsDiv) return;
 
         const query = iconSearchInput.value;
         if (query.length < 3) return;
@@ -253,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(url);
             const data = await response.json();
-            resultsContainer.innerHTML = '';
+            iconResultsDiv.innerHTML = '';
             data.icons.forEach(iconName => {
                 const iconUrl = fullData.config.apis.iconRetrieve.replace('{icon}', iconName);
                 const item = document.createElement('div');
@@ -263,11 +260,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(activeIconInput) activeIconInput.value = iconName;
                     iconModal.classList.add('hidden');
                 };
-                resultsContainer.appendChild(item);
+                iconResultsDiv.appendChild(item);
             });
         } catch (error) {
             console.error("Icon search failed:", error);
-            resultsContainer.innerHTML = 'Could not fetch icons.';
+            iconResultsDiv.innerHTML = 'Could not fetch icons.';
         }
     }
 
