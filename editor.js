@@ -1,29 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Element References ---
     const jsonFileInput = document.getElementById('jsonFileInput');
     const editorContent = document.getElementById('editor-content');
-    
-    // Div containers
-    const configEditorDiv = document.getElementById('config-editor');
-    const themeListDiv = document.getElementById('theme-list');
-    const categoryListDiv = document.getElementById('category-list');
-    const appListDiv = document.getElementById('app-list');
-    const templateListDiv = document.getElementById('template-list');
-
-    // Buttons
-    const addThemeBtn = document.getElementById('addThemeBtn');
-    const addCategoryBtn = document.getElementById('addCategoryBtn');
-    const addAppBtn = document.getElementById('addAppBtn');
-    const addTemplateBtn = document.getElementById('addTemplateBtn');
-    const saveJsonBtn = document.getElementById('saveJsonBtn');
-
-    // Modal elements
     const iconModal = document.getElementById('iconModal');
-    const iconSearchInput = document.getElementById('iconSearchInput');
-    const iconResultsDiv = document.getElementById('iconResults');
-    const closeIconModalBtn = document.getElementById('closeIconModalBtn');
-    let activeIconInput = null;
-
     let fullData = {};
+    let activeIconInput = null;
 
     // --- INITIALIZATION ---
     async function initEditor() {
@@ -34,10 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 editorContent.classList.remove('hidden');
                 buildFullEditor();
             } else {
-                console.warn('data.json not found or could not be loaded. Editor remains in "Load Data" state.');
+                console.warn('data.json not found. Waiting for file upload.');
             }
         } catch (error) {
-            console.error('Failed to load data.json on startup:', error);
+            console.error('Failed to auto-load data.json:', error);
         }
     }
 
@@ -59,48 +40,53 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsText(file);
     });
 
+    // --- UI BUILDERS ---
     function buildFullEditor() {
+        // Find all collapsible sections and clear them
+        document.querySelectorAll('[data-container]').forEach(container => container.innerHTML = '');
+        
         buildConfigEditor();
         buildThemesEditor();
         buildCategoriesEditor();
         buildAppsEditor();
         buildTemplatesEditor();
+        setupDynamicEventListeners();
     }
     
-    // --- BUILDER FUNCTIONS ---
-
     function buildConfigEditor() {
-        configEditorDiv.innerHTML = '<h3>UI Text</h3>';
+        const container = document.getElementById('config-editor');
+        container.innerHTML = '<h3>UI Text</h3>';
         const textFields = ['pageTitle', 'headerTitle', 'headerSubtitle', 'startButtonText', 'exportButtonText'];
         textFields.forEach(key => {
-            configEditorDiv.innerHTML += `<label>${key}</label><input type="text" value="${fullData.config[key] || ''}" data-config-key="${key}">`;
+            container.innerHTML += `<label>${key}</label><input type="text" value="${fullData.config[key] || ''}" data-config-key="${key}">`;
         });
         
-        configEditorDiv.innerHTML += '<h3>API URLs</h3>';
+        container.innerHTML += '<h3>API URLs</h3>';
         for (const key in fullData.config.apis) {
-            configEditorDiv.innerHTML += `<label>${key}</label><input type="text" value="${fullData.config.apis[key]}" data-config-type="api" data-key="${key}">`;
+            container.innerHTML += `<label>${key}</label><input type="text" value="${fullData.config.apis[key]}" data-config-type="api" data-key="${key}">`;
         }
 
-        configEditorDiv.innerHTML += '<h3>AI Settings</h3>';
-        configEditorDiv.innerHTML += `<label>AI Model Path</label><input type="text" id="ai-model" value="${fullData.config.ai.model}">`;
-        configEditorDiv.innerHTML += `<label>AI Prompt Template</label><textarea id="ai-prompt">${fullData.config.ai.prompt}</textarea>`;
+        container.innerHTML += '<h3>AI Settings</h3>';
+        container.innerHTML += `<label>AI Model Path</label><input type="text" id="ai-model" value="${fullData.config.ai.model}">`;
+        container.innerHTML += `<label>AI Prompt Template</label><textarea id="ai-prompt">${fullData.config.ai.prompt}</textarea>`;
 
-        configEditorDiv.innerHTML += '<h3>Currencies</h3>';
+        container.innerHTML += '<h3>Currencies</h3>';
         const supportedCurrencies = fullData.config.currencies.supported.join(', ');
         const currencyOptions = fullData.config.currencies.supported.map(c => `<option value="${c}" ${c === fullData.config.currencies.default ? 'selected' : ''}>${c}</option>`).join('');
-        configEditorDiv.innerHTML += `
+        container.innerHTML += `
             <label>Supported Currencies (comma-separated)</label><input type="text" id="config-currencies" value="${supportedCurrencies}">
             <label>Default Currency</label><select id="config-default-currency">${currencyOptions}</select>
         `;
     }
 
     function buildThemesEditor() {
-        themeListDiv.innerHTML = '';
+        const container = document.getElementById('theme-list');
+        container.innerHTML = '';
         fullData.config.themes.forEach((theme, index) => {
             const div = document.createElement('div');
             div.className = 'item-card';
             div.innerHTML = `
-                <button class="delete-btn" onclick="deleteItem('theme', ${index})">×</button>
+                <button class="delete-btn" data-type="theme" data-index="${index}">×</button>
                 <h3>Theme ${index + 1}</h3>
                 <label>Name</label><input type="text" value="${theme.name}" class="theme-name">
                 <label>Font Family</label><input type="text" value="${theme.fontFamily}" class="theme-font">
@@ -116,24 +102,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="color-input-group"><label>Secondary</label><input type="color" value="${theme.dark.secondary}" class="theme-dark-secondary"></div>
                     </div>
                 </div>`;
-            themeListDiv.appendChild(div);
+            container.appendChild(div);
         });
     }
 
     function buildCategoriesEditor() {
-        categoryListDiv.innerHTML = '';
+        const container = document.getElementById('category-list');
+        container.innerHTML = '';
         fullData.categories.forEach((cat, index) => {
             const div = document.createElement('div');
             div.className = 'item-card';
-            div.innerHTML = `<button class="delete-btn" onclick="deleteItem('category', ${index})">×</button>
+            div.innerHTML = `<button class="delete-btn" data-type="category" data-index="${index}">×</button>
                 <label>Category Name</label><input type="text" value="${cat.name}" class="cat-name">
                 <label>Description</label><input type="text" value="${cat.description}" class="cat-desc">`;
-            categoryListDiv.appendChild(div);
+            container.appendChild(div);
         });
     }
 
     function buildAppsEditor() {
-        appListDiv.innerHTML = '';
+        const container = document.getElementById('app-list');
+        container.innerHTML = '';
         const currencyOptions = fullData.config.currencies.supported.map(c => `<option value="${c}">${c}</option>`).join('');
         const categoryOptions = fullData.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
 
@@ -141,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const div = document.createElement('div');
             div.className = 'item-card';
             div.innerHTML = `
-                <button class="delete-btn" onclick="deleteItem('app', ${index})">×</button>
+                <button class="delete-btn" data-type="app" data-index="${index}">×</button>
                 <label>App Name</label><input type="text" value="${app.name}" class="app-name">
                 <label>Description</label><textarea class="app-desc">${app.description}</textarea>
                 <label>Icon (from iconify, e.g., mdi:database)</label>
@@ -155,29 +143,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 <label>Currency</label><select class="app-currency">${currencyOptions}</select>`;
             div.querySelector('.app-cat').value = app.category;
             div.querySelector('.app-currency').value = app.cost.currency;
-            appListDiv.appendChild(div);
+            container.appendChild(div);
         });
     }
 
     function buildTemplatesEditor() {
-        templateListDiv.innerHTML = '';
+        const container = document.getElementById('template-list');
+        container.innerHTML = '';
         const appCheckboxes = fullData.apps.map(app => `<label class="template-app-item"><input type="checkbox" value="${app.id}"> ${app.name} (ID: ${app.id})</label>`).join('');
         fullData.config.templates.forEach((template, index) => {
             const div = document.createElement('div');
             div.className = 'item-card';
-            div.innerHTML = `<button class="delete-btn" onclick="deleteItem('template', ${index})">×</button>
+            div.innerHTML = `<button class="delete-btn" data-type="template" data-index="${index}">×</button>
                 <label>Template Name</label><input type="text" value="${template.name}" class="template-name">
                 <label>Included Apps</label><div class="template-apps-list">${appCheckboxes}</div>`;
             template.appIds.forEach(id => {
                 const checkbox = div.querySelector(`input[value="${id}"]`);
                 if(checkbox) checkbox.checked = true;
             });
-            templateListDiv.appendChild(div);
+            container.appendChild(div);
+        });
+    }
+
+    // --- DYNAMIC EVENT LISTENERS ---
+    function setupDynamicEventListeners() {
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.onclick = (e) => deleteItem(e.target.dataset.type, e.target.dataset.index);
+        });
+
+        document.querySelectorAll('.open-icon-modal').forEach(btn => {
+            btn.onclick = (e) => openIconModal(e.target.dataset.targetInput);
         });
     }
 
     // --- ADD/DELETE LOGIC ---
-    window.deleteItem = (type, index) => {
+    function deleteItem(type, index) {
         if (confirm(`Are you sure you want to delete this ${type}?`)) {
             if (type === 'theme') fullData.config.themes.splice(index, 1);
             if (type === 'category') fullData.categories.splice(index, 1);
@@ -185,33 +185,31 @@ document.addEventListener('DOMContentLoaded', () => {
             if (type === 'template') fullData.config.templates.splice(index, 1);
             buildFullEditor();
         }
-    };
+    }
     
-    addThemeBtn.addEventListener('click', () => {
+    document.getElementById('addThemeBtn').addEventListener('click', () => {
         fullData.config.themes.push({ name: "New Theme", fontFamily: "sans-serif", light: { primary: "#000000", secondary: "#cccccc" }, dark: { primary: "#ffffff", secondary: "#333333" } });
         buildThemesEditor();
     });
-    addCategoryBtn.addEventListener('click', () => {
+    document.getElementById('addCategoryBtn').addEventListener('click', () => {
         fullData.categories.push({ name: "New Category", description: "" });
         buildCategoriesEditor();
     });
-    addAppBtn.addEventListener('click', () => {
+    document.getElementById('addAppBtn').addEventListener('click', () => {
         fullData.apps.push({ id: Date.now(), name: "New App", category: "", description: "", icon: "mdi:help-box", cost: { monthly: 0, yearly: 0, currency: "USD" } });
         buildAppsEditor();
     });
-    addTemplateBtn.addEventListener('click', () => {
+    document.getElementById('addTemplateBtn').addEventListener('click', () => {
         fullData.config.templates.push({ name: "New Template", appIds: [] });
         buildTemplatesEditor();
     });
 
     // --- ICON MODAL LOGIC ---
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('open-icon-modal')) {
-            activeIconInput = document.getElementById(e.target.dataset.targetInput);
-            iconModal.classList.remove('hidden');
-            iconSearchInput.focus();
-        }
-    });
+    function openIconModal(targetInputId) {
+        activeIconInput = document.getElementById(targetInputId);
+        iconModal.classList.remove('hidden');
+        iconSearchInput.focus();
+    }
 
     closeIconModalBtn.addEventListener('click', () => iconModal.classList.add('hidden'));
     iconModal.addEventListener('click', (e) => { if(e.target === iconModal) iconModal.classList.add('hidden'); });
@@ -239,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- SAVE LOGIC ---
-    saveJsonBtn.addEventListener('click', () => {
+    document.getElementById('saveJsonBtn').addEventListener('click', () => {
         const newData = { ...fullData, config: { ...fullData.config, themes: [], templates: [] }, categories: [], apps: [] };
 
         // Save Config
