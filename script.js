@@ -1,3 +1,5 @@
+import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
+
 document.addEventListener('DOMContentLoaded', async () => {
     // --- Global State & Config ---
     let appData = {};
@@ -67,6 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     function populateThemeSelector() {
+        themeSelector.innerHTML = '';
         config.themes.forEach((theme, index) => {
             themeSelector.add(new Option(theme.name, index));
         });
@@ -106,6 +109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     function populateCurrencySelector() {
+        currencySelector.innerHTML = '';
         config.currencies.supported.forEach(code => currencySelector.add(new Option(code, code)));
         currencySelector.value = selectedCurrency;
     }
@@ -263,6 +267,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     function populateTemplateSelector() {
+        templateSelector.innerHTML = '<option value="">-- Select a Template --</option>';
         config.templates.forEach(template => {
             templateSelector.add(new Option(template.name, JSON.stringify(template.appIds)));
         });
@@ -285,14 +290,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             if (!aiGenerator) {
-                aiGenerator = await window.aiPipeline('text2text-generation', config.ai.model);
+                aiGenerator = await window.aiPipeline('summarization', config.ai.model);
             }
             const prompt = config.ai.prompt.replace('{text}', text);
             const output = await aiGenerator(prompt, { max_new_tokens: 100, num_beams: 4 });
-            aiOutputText.textContent = output[0].generated_text;
+            aiOutputText.textContent = output[0].summary_text;
         } catch (error) {
             console.error('AI generation failed:', error);
-            aiOutputText.textContent = 'An error occurred. The AI model might still be downloading in the background.';
+            aiOutputText.textContent = `AI model failed to load. This can be due to a network issue or an invalid model path in data.json. Please check the console.`;
         } finally {
             loadingBarContainer.classList.add('hidden');
             loadingBar.classList.remove('active');
