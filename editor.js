@@ -2,13 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Element References ---
     const jsonFileInput = document.getElementById('jsonFileInput');
     const editorContent = document.getElementById('editor-content');
-    
-    // Modal elements
     const iconModal = document.getElementById('iconModal');
-    const iconSearchInput = document.getElementById('iconSearchInput');
-    const iconResultsDiv = document.getElementById('iconResults');
-    const closeIconModalBtn = document.getElementById('closeIconModalBtn');
-    
     let fullData = {};
     let activeIconInput = null;
 
@@ -54,7 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- UI Builders ---
     function buildFullEditor() {
         // Find all collapsible sections and clear them
-        document.querySelectorAll('[data-container]').forEach(container => container.innerHTML = '');
+        document.getElementById('config-editor').innerHTML = '';
+        document.getElementById('theme-list').innerHTML = '';
+        document.getElementById('category-list').innerHTML = '';
+        document.getElementById('app-list').innerHTML = '';
+        document.getElementById('template-list').innerHTML = '';
         
         buildConfigEditor();
         buildThemesEditor();
@@ -92,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function buildThemesEditor() {
         const container = document.getElementById('theme-list');
-        container.innerHTML = '';
         fullData.config.themes.forEach((theme, index) => {
             const div = document.createElement('div');
             div.className = 'item-card';
@@ -117,7 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function buildCategoriesEditor() {
         const container = document.getElementById('category-list');
-        container.innerHTML = '';
         fullData.categories.forEach((cat, index) => {
             const div = document.createElement('div');
             div.className = 'item-card';
@@ -130,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function buildAppsEditor() {
         const container = document.getElementById('app-list');
-        container.innerHTML = '';
         const currencyOptions = fullData.config.currencies.supported.map(c => `<option value="${c}">${c}</option>`).join('');
         const categoryOptions = fullData.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
 
@@ -158,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function buildTemplatesEditor() {
         const container = document.getElementById('template-list');
-        container.innerHTML = '';
         const appCheckboxes = fullData.apps.map(app => `<label class="template-app-item"><input type="checkbox" value="${app.id}"> ${app.name} (ID: ${app.id})</label>`).join('');
         fullData.config.templates.forEach((template, index) => {
             const div = document.createElement('div');
@@ -200,12 +194,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('saveJsonBtn').addEventListener('click', saveData);
     }
     
-    // Re-attach listeners to dynamically created elements
     function setupDynamicEventListeners() {
         document.querySelectorAll('.delete-btn').forEach(btn => {
             btn.onclick = (e) => deleteItem(e.target.dataset.type, e.target.dataset.index);
         });
-
         document.querySelectorAll('.open-icon-modal').forEach(btn => {
             btn.onclick = (e) => openIconModal(e.target.dataset.targetInput);
         });
@@ -259,13 +251,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveData() {
         const newData = JSON.parse(JSON.stringify(fullData)); // Deep copy
 
-        // Clear arrays to rebuild them from the DOM
         newData.config.themes = [];
         newData.config.templates = [];
         newData.categories = [];
         newData.apps = [];
 
-        // Save Config
         document.querySelectorAll('#config-editor input[data-config-key]').forEach(input => { newData.config[input.dataset.configKey] = input.value; });
         document.querySelectorAll('#config-editor input[data-config-type="api"]').forEach(input => { newData.config.apis[input.dataset.key] = input.value; });
         newData.config.ai.model = document.getElementById('ai-model').value;
@@ -273,7 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
         newData.config.currencies.supported = document.getElementById('config-currencies').value.split(',').map(c => c.trim());
         newData.config.currencies.default = document.getElementById('config-default-currency').value;
 
-        // Save Themes, Categories, Apps, Templates
         document.querySelectorAll('#theme-list .item-card').forEach(card => {
             newData.config.themes.push({
                 name: card.querySelector('.theme-name').value, fontFamily: card.querySelector('.theme-font').value,
