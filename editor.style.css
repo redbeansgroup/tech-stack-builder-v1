@@ -36,15 +36,20 @@ main {
 details > summary {
     cursor: pointer;
     list-style: none; /* Remove default marker */
+    padding: 10px 0;
 }
 details > summary::-webkit-details-marker {
     display: none; /* Remove default marker for Chrome */
+}
+details > summary h2 {
+    display: inline;
 }
 details > summary h2::before {
     content: '▶';
     margin-right: 10px;
     font-size: 0.8em;
     transition: transform 0.2s;
+    display: inline-block;
 }
 details[open] > summary h2::before {
     transform: rotate(90deg);
@@ -184,3 +189,24 @@ button.add-btn:hover {
 #saveJsonBtn:hover {
     background-color: #218838;
 }
+
+/* Icon Search Specific */
+.icon-input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.icon-input-group input {
+    flex-grow: 1;
+}
+.icon-input-group button {
+    margin-top: 0;
+    padding: 8px 12px;
+}
+.modal { position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; }
+.modal-content { background-color: #fff; padding: 20px; border: 1px solid #ddd; width: 90%; max-width: 500px; border-radius: 8px; }
+.close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+#iconResults { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; max-height: 300px; overflow-y: auto; }
+.icon-result-item { cursor: pointer; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+.icon-result-item:hover { background-color: #f0f0f0; }
+.icon-result-item img { width: 32px; height: 32px; }
