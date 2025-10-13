@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeIconInput = null;
 
     // --- Core Initializer ---
-    async function init() {
+    async function initEditor() {
         // Ensure modal is hidden on start, no matter what.
         iconModal.classList.add('hidden');
         
@@ -53,11 +53,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- UI Builders ---
     function buildFullEditor() {
+        // Find all collapsible sections and clear them
+        document.querySelectorAll('[data-container]').forEach(container => container.innerHTML = '');
+        
         buildConfigEditor();
         buildThemesEditor();
         buildCategoriesEditor();
         buildAppsEditor();
         buildTemplatesEditor();
+        setupDynamicEventListeners();
     }
     
     function buildConfigEditor() {
@@ -197,26 +201,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Re-attach listeners to dynamically created elements
-    document.addEventListener('click', (e) => {
-        if (e.target.matches('.delete-btn')) {
-            const type = e.target.dataset.type;
-            const index = e.target.dataset.index;
-            if (confirm(`Are you sure you want to delete this ${type}?`)) {
-                if (type === 'theme') fullData.config.themes.splice(index, 1);
-                if (type === 'category') fullData.categories.splice(index, 1);
-                if (type === 'app') fullData.apps.splice(index, 1);
-                if (type === 'template') fullData.config.templates.splice(index, 1);
-                buildFullEditor();
-            }
+    function setupDynamicEventListeners() {
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.onclick = (e) => deleteItem(e.target.dataset.type, e.target.dataset.index);
+        });
+
+        document.querySelectorAll('.open-icon-modal').forEach(btn => {
+            btn.onclick = (e) => openIconModal(e.target.dataset.targetInput);
+        });
+    }
+    
+    function deleteItem(type, index) {
+        if (confirm(`Are you sure you want to delete this ${type}?`)) {
+            if (type === 'theme') fullData.config.themes.splice(index, 1);
+            if (type === 'category') fullData.categories.splice(index, 1);
+            if (type === 'app') fullData.apps.splice(index, 1);
+            if (type === 'template') fullData.config.templates.splice(index, 1);
+            buildFullEditor();
         }
-        if (e.target.matches('.open-icon-modal')) {
-            activeIconInput = document.getElementById(e.target.dataset.targetInput);
-            iconModal.classList.remove('hidden');
-            iconSearchInput.focus();
-        }
-    });
+    }
 
     // --- ICON MODAL ---
+    function openIconModal(targetInputId) {
+        activeIconInput = document.getElementById(targetInputId);
+        iconModal.classList.remove('hidden');
+        iconSearchInput.focus();
+    }
+
     async function handleIconSearch(e) {
         if (e.key !== 'Enter') return;
         const query = iconSearchInput.value;
