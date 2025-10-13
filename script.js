@@ -70,23 +70,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     function populateThemeSelector() {
         themeSelector.innerHTML = '';
+        if (!Array.isArray(config.themes)) {
+            return;
+        }
+
         config.themes.forEach((theme, index) => {
             themeSelector.add(new Option(theme.name, index));
         });
-        const savedTheme = localStorage.getItem('selectedTheme') || 0;
-        themeSelector.value = savedTheme;
-        applyTheme(savedTheme);
+
+        const storedTheme = parseInt(localStorage.getItem('selectedTheme'), 10);
+        const fallbackIndex = 0;
+        const selectedIndex = Number.isInteger(storedTheme) && storedTheme >= 0 && storedTheme < config.themes.length
+            ? storedTheme
+            : fallbackIndex;
+
+        themeSelector.value = selectedIndex;
+        applyTheme(selectedIndex);
     }
-    
+
     function applyTheme(themeIndex) {
-        const theme = config.themes[themeIndex];
+        const numericIndex = typeof themeIndex === 'string' ? parseInt(themeIndex, 10) : themeIndex;
+        const theme = config.themes?.[numericIndex];
+        if (!theme) {
+            console.warn('Theme index out of range.');
+            return;
+        }
         document.documentElement.style.setProperty('--font-family', theme.fontFamily);
         const mode = darkModeToggle.checked ? 'dark' : 'light';
         const colors = { ...theme.light, ...theme.dark, ...theme[mode] };
         for (const [key, value] of Object.entries(colors)) {
             document.documentElement.style.setProperty(`--${key}-color`, value);
         }
-        localStorage.setItem('selectedTheme', themeIndex);
+        localStorage.setItem('selectedTheme', numericIndex);
     }
 
     function updateTheme() {
@@ -453,6 +468,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 reader.readAsDataURL(file);
             }
         });
+
+        updateTheme();
     }
 
     init();
