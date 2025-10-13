@@ -36,8 +36,8 @@
       "pieChart": "https://quickchart.io/chart?bkg=transparent&c={type:'pie',data:{labels:[{labels}],datasets:[{data:[{data}]}]}}"
     },
     "ai": {
-      "model": "Xenova/LaMini-T5-77M",
-      "prompt": "Rewrite the following description to be exceptionally clear, concise, and professional for a business proposal. Adopt an academic, formal style. Do not repeat ideas. Description: {text}"
+      "model": "Xenova/distilbart-cnn-6-6",
+      "prompt": "{text}"
     },
     "templates": [
       {
@@ -69,7 +69,7 @@
     { "id": 1, "name": "Hostinger AI Website Builder", "category": "Frontend Technologies", "description": "Create websites with AI content and SEO.", "icon": "simple-icons:hostinger", "cost": { "monthly": 20.00, "yearly": 210.00, "currency": "USD" } },
     { "id": 2, "name": "Wix ADI", "category": "Frontend Technologies", "description": "AI-driven design tool for professional websites.", "icon": "simple-icons:wix", "cost": { "monthly": 22.00, "yearly": 240.00, "currency": "USD" } },
     { "id": 6, "name": "HubSpot", "category": "API & Integrations", "description": "Unify marketing, sales, and CRM.", "icon": "simple-icons:hubspot", "cost": { "monthly": 18.50, "yearly": 200.00, "currency": "EUR" } },
-    { "id": 7, "name": "Copy.ai", "category": "Development Workflow", "description": "AI-driven for effortless content generation.", "icon": "simple-icons:copyai", "cost": { "monthly": 49.00, "yearly": 420.00, "currency": "USD" } },
+    { "id": 7, "name": "Copy.ai", "category": "Development Workflow", "description": "AI-driven for effortless content generation.", "icon": "mdi:robot", "cost": { "monthly": 49.00, "yearly": 420.00, "currency": "USD" } },
     { "id": 12, "name": "Booke AI", "category": "Backend Technologies", "description": "AI-driven automation for bookkeeping.", "icon": "mdi:book-open-page-variant", "cost": { "monthly": 15.00, "yearly": 160.00, "currency": "USD" } },
     { "id": 17, "name": "ClickUp", "category": "Development Workflow", "description": "Streamline tasks, docs, and collaboration.", "icon": "simple-icons:clickup", "cost": { "monthly": 16.00, "yearly": 175.00, "currency": "GBP" } },
     { "id": 18, "name": "Asana", "category": "Development Workflow", "description": "Manage projects and automate tasks efficiently.", "icon": "simple-icons:asana", "cost": { "monthly": 10.99, "yearly": 131.88, "currency": "EUR" } },
@@ -81,10 +81,10 @@
     { "id": 30, "name": "Algolia", "category": "API & Integrations", "description": "AI-powered search with instant results.", "icon": "simple-icons:algolia", "cost": { "monthly": 0.00, "yearly": 0.00, "currency": "USD" } },
     { "id": 31, "name": "Maverick", "category": "API & Integrations", "description": "Send customers personalized videos at scale.", "icon": "mdi:video-account", "cost": { "monthly": 100.00, "yearly": 1000.00, "currency": "USD" } },
     { "id": 32, "name": "Surfer", "category": "Testing & QA", "description": "Enhance organic traffic and rankings.", "icon": "simple-icons:surfer", "cost": { "monthly": 89.00, "yearly": 828.00, "currency": "USD" } },
-    { "id": 35, "name": "Frase", "category": "Testing & QA", "description": "AI writing, analysis, and optimization.", "icon": "simple-icons:frase", "cost": { "monthly": 14.99, "yearly": 150.00, "currency": "USD" } },
+    { "id": 35, "name": "Frase", "category": "Testing & QA", "description": "AI writing, analysis, and optimization.", "icon": "mdi:text-search", "cost": { "monthly": 14.99, "yearly": 150.00, "currency": "USD" } },
     { "id": 37, "name": "Zendesk", "category": "API & Integrations", "description": "Omnichannel support with AI and analytics.", "icon": "simple-icons:zendesk", "cost": { "monthly": 55.00, "yearly": 588.00, "currency": "EUR" } },
     { "id": 38, "name": "Intercom", "category": "API & Integrations", "description": "AI-driven, omnichannel support platform.", "icon": "simple-icons:intercom", "cost": { "monthly": 74.00, "yearly": 750.00, "currency": "USD" } },
     { "id": 47, "name": "Gong", "category": "Monitoring & Analytics", "description": "Actionable insights from sales data.", "icon": "simple-icons:gong", "cost": { "monthly": 100.00, "yearly": 1200.00, "currency": "USD" } },
-    { "id": 49, "name": "Superhuman", "category": "Development Workflow", "description": "Revolutionize email with AI and speed.", "icon": "simple-icons:superhuman", "cost": { "monthly": 30.00, "yearly": 300.00, "currency": "USD" } }
+    { "id": 49, "name": "Superhuman", "category": "Development Workflow", "description": "Revolutionize email with AI and speed.", "icon": "mdi:email-fast-outline", "cost": { "monthly": 30.00, "yearly": 300.00, "currency": "USD" } }
   ]
 }
