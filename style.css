@@ -70,11 +70,16 @@ textarea { min-height: 80px; resize: vertical; }
 
 /* Categories & App Selection */
 #categoryToggles { display: flex; flex-wrap: wrap; gap: 10px; }
+.category-btn-wrapper { display: flex; align-items: center; background-color: transparent; border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; }
 .category-btn {
-    padding: 8px 15px; border: 1px solid var(--border-color); border-radius: 20px;
-    cursor: pointer; background-color: transparent; color: var(--text-color); transition: all 0.2s;
+    padding: 8px 15px; cursor: pointer; background-color: transparent; color: var(--text-color);
+    border: none; font-size: 0.9rem;
 }
-.category-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+.category-btn-wrapper.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+.category-btn-wrapper.active .category-btn, .category-btn-wrapper.active .category-icon-btn { color: white; }
+.category-icon-btn { padding: 8px 10px 8px 0; cursor: pointer; background: transparent; border: none; color: var(--text-color); }
+.category-icon-btn img { vertical-align: middle; width: 16px; height: 16px; }
+
 
 #app-selection-area { padding: 15px; background-color: rgba(100,100,100,0.05); border-radius: 5px; display: flex; flex-wrap: wrap; gap: 12px; }
 .app-item {
@@ -101,6 +106,9 @@ textarea { min-height: 80px; resize: vertical; }
 
 /* AI Section */
 .ai-output { margin-top: 15px; padding: 15px; background-color: rgba(40, 167, 69, 0.1); border-left: 3px solid var(--secondary-color); border-radius: 4px; min-height: 20px; }
+.loading-bar-container { width: 100%; background-color: var(--border-color); border-radius: 4px; overflow: hidden; margin-top: 15px; height: 8px; }
+.loading-bar { width: 0; height: 8px; background-color: var(--primary-color); transition: width 20s linear; }
+.loading-bar.active { width: 100%; }
 
 /* Buttons */
 button {
@@ -125,4 +133,5 @@ input:checked + .slider:before { transform: translateX(18px); }
 #iconResults { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; max-height: 300px; overflow-y: auto; }
 .icon-result-item { cursor: pointer; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; }
 .icon-result-item:hover { background-color: var(--input-bg); }
-.icon-result-item img { width: 32px; height: 32px; }
+.icon-result-item img { width: 32px; height: 32px; filter: var(--icon-filter, none); }
+body.dark-mode .icon-result-item img { --icon-filter: invert(1) hue-rotate(180deg); }
