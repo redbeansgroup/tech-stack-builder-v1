@@ -2,19 +2,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const jsonFileInput = document.getElementById('jsonFileInput');
     const editorContent = document.getElementById('editor-content');
     
-    // Div containers for each section
+    // Div containers
     const configEditorDiv = document.getElementById('config-editor');
     const themeListDiv = document.getElementById('theme-list');
     const categoryListDiv = document.getElementById('category-list');
     const appListDiv = document.getElementById('app-list');
     const templateListDiv = document.getElementById('template-list');
 
-    // "Add" buttons
+    // Buttons
     const addThemeBtn = document.getElementById('addThemeBtn');
     const addCategoryBtn = document.getElementById('addCategoryBtn');
     const addAppBtn = document.getElementById('addAppBtn');
     const addTemplateBtn = document.getElementById('addTemplateBtn');
     const saveJsonBtn = document.getElementById('saveJsonBtn');
+
+    // Modal elements
+    const iconModal = document.getElementById('iconModal');
+    const iconSearchInput = document.getElementById('iconSearchInput');
+    const iconResultsDiv = document.getElementById('iconResults');
+    const closeIconModalBtn = document.getElementById('closeIconModalBtn');
+    let activeIconInput = null;
 
     let fullData = {};
 
@@ -22,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
     jsonFileInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
@@ -51,32 +57,24 @@ document.addEventListener('DOMContentLoaded', () => {
         configEditorDiv.innerHTML = '<h3>UI Text</h3>';
         const textFields = ['pageTitle', 'headerTitle', 'headerSubtitle', 'startButtonText', 'exportButtonText'];
         textFields.forEach(key => {
-            configEditorDiv.innerHTML += `
-                <label for="config-text-${key}">${key}</label>
-                <input type="text" id="config-text-${key}" value="${fullData.config[key] || ''}" data-config-key="${key}">
-            `;
+            configEditorDiv.innerHTML += `<label>${key}</label><input type="text" value="${fullData.config[key] || ''}" data-config-key="${key}">`;
         });
         
         configEditorDiv.innerHTML += '<h3>API URLs</h3>';
         for (const key in fullData.config.apis) {
-            configEditorDiv.innerHTML += `
-                <label for="config-api-${key}">${key}</label>
-                <input type="text" id="config-api-${key}" value="${fullData.config.apis[key]}" data-config-type="api" data-key="${key}">
-            `;
+            configEditorDiv.innerHTML += `<label>${key}</label><input type="text" value="${fullData.config.apis[key]}" data-config-type="api" data-key="${key}">`;
         }
 
         configEditorDiv.innerHTML += '<h3>AI Settings</h3>';
-        configEditorDiv.innerHTML += `<label for="ai-model">AI Model Path</label><input type="text" id="ai-model" value="${fullData.config.ai.model}">`;
-        configEditorDiv.innerHTML += `<label for="ai-prompt">AI Prompt Template</label><textarea id="ai-prompt">${fullData.config.ai.prompt}</textarea>`;
+        configEditorDiv.innerHTML += `<label>AI Model Path</label><input type="text" id="ai-model" value="${fullData.config.ai.model}">`;
+        configEditorDiv.innerHTML += `<label>AI Prompt Template</label><textarea id="ai-prompt">${fullData.config.ai.prompt}</textarea>`;
 
         configEditorDiv.innerHTML += '<h3>Currencies</h3>';
         const supportedCurrencies = fullData.config.currencies.supported.join(', ');
         const currencyOptions = fullData.config.currencies.supported.map(c => `<option value="${c}" ${c === fullData.config.currencies.default ? 'selected' : ''}>${c}</option>`).join('');
         configEditorDiv.innerHTML += `
-            <label for="config-currencies">Supported Currencies (comma-separated)</label>
-            <input type="text" id="config-currencies" value="${supportedCurrencies}">
-            <label for="config-default-currency">Default Currency</label>
-            <select id="config-default-currency">${currencyOptions}</select>
+            <label>Supported Currencies (comma-separated)</label><input type="text" id="config-currencies" value="${supportedCurrencies}">
+            <label>Default Currency</label><select id="config-default-currency">${currencyOptions}</select>
         `;
     }
 
@@ -88,10 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
             div.innerHTML = `
                 <button class="delete-btn" onclick="deleteItem('theme', ${index})">×</button>
                 <h3>Theme ${index + 1}</h3>
-                <label>Name</label>
-                <input type="text" value="${theme.name}" class="theme-name">
-                <label>Font Family</label>
-                <input type="text" value="${theme.fontFamily}" class="theme-font">
+                <label>Name</label><input type="text" value="${theme.name}" class="theme-name">
+                <label>Font Family</label><input type="text" value="${theme.fontFamily}" class="theme-font">
                 <div class="theme-card-grid">
                     <div class="theme-colors">
                         <h4>Light Mode</h4>
@@ -103,8 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="color-input-group"><label>Primary</label><input type="color" value="${theme.dark.primary}" class="theme-dark-primary"></div>
                         <div class="color-input-group"><label>Secondary</label><input type="color" value="${theme.dark.secondary}" class="theme-dark-secondary"></div>
                     </div>
-                </div>
-            `;
+                </div>`;
             themeListDiv.appendChild(div);
         });
     }
@@ -114,15 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
         fullData.categories.forEach((cat, index) => {
             const div = document.createElement('div');
             div.className = 'item-card';
-            div.innerHTML = `
-                <button class="delete-btn" onclick="deleteItem('category', ${index})">×</button>
-                <label>Category Name</label>
-                <input type="text" value="${cat.name}" class="cat-name">
-                <label>Description</label>
-                <input type="text" value="${cat.description}" class="cat-desc">
-                <label>Icon (from iconify, e.g., mdi:database)</label>
-                <input type="text" value="${cat.icon}" class="cat-icon">
-            `;
+            div.innerHTML = `<button class="delete-btn" onclick="deleteItem('category', ${index})">×</button>
+                <label>Category Name</label><input type="text" value="${cat.name}" class="cat-name">
+                <label>Description</label><input type="text" value="${cat.description}" class="cat-desc">`;
             categoryListDiv.appendChild(div);
         });
     }
@@ -139,11 +128,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="delete-btn" onclick="deleteItem('app', ${index})">×</button>
                 <label>App Name</label><input type="text" value="${app.name}" class="app-name">
                 <label>Description</label><textarea class="app-desc">${app.description}</textarea>
+                <label>Icon (from iconify, e.g., mdi:database)</label>
+                <div class="icon-input-group">
+                    <input type="text" value="${app.icon}" class="app-icon" id="app-icon-input-${index}">
+                    <button class="open-icon-modal" data-target-input="app-icon-input-${index}">Search</button>
+                </div>
                 <label>Category</label><select class="app-cat">${categoryOptions}</select>
                 <label>Monthly Cost</label><input type="number" step="0.01" value="${app.cost.monthly}" class="app-cost-monthly">
                 <label>Yearly Cost</label><input type="number" step="0.01" value="${app.cost.yearly}" class="app-cost-yearly">
-                <label>Currency</label><select class="app-currency">${currencyOptions}</select>
-            `;
+                <label>Currency</label><select class="app-currency">${currencyOptions}</select>`;
             div.querySelector('.app-cat').value = app.category;
             div.querySelector('.app-currency').value = app.cost.currency;
             appListDiv.appendChild(div);
@@ -152,22 +145,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function buildTemplatesEditor() {
         templateListDiv.innerHTML = '';
-        const appCheckboxes = fullData.apps.map(app => `
-            <label class="template-app-item">
-                <input type="checkbox" value="${app.id}"> ${app.name} (ID: ${app.id})
-            </label>
-        `).join('');
-
+        const appCheckboxes = fullData.apps.map(app => `<label class="template-app-item"><input type="checkbox" value="${app.id}"> ${app.name} (ID: ${app.id})</label>`).join('');
         fullData.config.templates.forEach((template, index) => {
             const div = document.createElement('div');
             div.className = 'item-card';
-            div.innerHTML = `
-                <button class="delete-btn" onclick="deleteItem('template', ${index})">×</button>
-                <label>Template Name</label>
-                <input type="text" value="${template.name}" class="template-name">
-                <label>Included Apps</label>
-                <div class="template-apps-list">${appCheckboxes}</div>
-            `;
+            div.innerHTML = `<button class="delete-btn" onclick="deleteItem('template', ${index})">×</button>
+                <label>Template Name</label><input type="text" value="${template.name}" class="template-name">
+                <label>Included Apps</label><div class="template-apps-list">${appCheckboxes}</div>`;
             template.appIds.forEach(id => {
                 const checkbox = div.querySelector(`input[value="${id}"]`);
                 if(checkbox) checkbox.checked = true;
@@ -192,11 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
         buildThemesEditor();
     });
     addCategoryBtn.addEventListener('click', () => {
-        fullData.categories.push({ name: "New Category", description: "", icon: "mdi:help-box" });
+        fullData.categories.push({ name: "New Category", description: "" });
         buildCategoriesEditor();
     });
     addAppBtn.addEventListener('click', () => {
-        fullData.apps.push({ id: Date.now(), name: "New App", category: "", description: "", cost: { monthly: 0, yearly: 0, currency: "USD" } });
+        fullData.apps.push({ id: Date.now(), name: "New App", category: "", description: "", icon: "mdi:help-box", cost: { monthly: 0, yearly: 0, currency: "USD" } });
         buildAppsEditor();
     });
     addTemplateBtn.addEventListener('click', () => {
@@ -204,17 +188,47 @@ document.addEventListener('DOMContentLoaded', () => {
         buildTemplatesEditor();
     });
 
+    // --- ICON MODAL LOGIC ---
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('open-icon-modal')) {
+            activeIconInput = document.getElementById(e.target.dataset.targetInput);
+            iconModal.classList.remove('hidden');
+            iconSearchInput.focus();
+        }
+    });
+
+    closeIconModalBtn.addEventListener('click', () => iconModal.classList.add('hidden'));
+    iconModal.addEventListener('click', (e) => { if(e.target === iconModal) iconModal.classList.add('hidden'); });
+
+    iconSearchInput.addEventListener('keydown', async (e) => {
+        if (e.key !== 'Enter') return;
+        const query = iconSearchInput.value;
+        if (query.length < 3) return;
+        
+        const url = fullData.config.apis.iconSearch.replace('{query}', encodeURIComponent(query));
+        const response = await fetch(url);
+        const data = await response.json();
+        iconResultsDiv.innerHTML = '';
+        data.icons.forEach(iconName => {
+            const iconUrl = fullData.config.apis.iconRetrieve.replace('{icon}', iconName);
+            const item = document.createElement('div');
+            item.className = 'icon-result-item';
+            item.innerHTML = `<img src="${iconUrl}" alt="${iconName}">`;
+            item.onclick = () => {
+                if(activeIconInput) activeIconInput.value = iconName;
+                iconModal.classList.add('hidden');
+            };
+            iconResultsDiv.appendChild(item);
+        });
+    });
+
     // --- SAVE LOGIC ---
     saveJsonBtn.addEventListener('click', () => {
         const newData = { ...fullData, config: { ...fullData.config, themes: [], templates: [] }, categories: [], apps: [] };
 
         // Save Config
-        document.querySelectorAll('#config-editor input[data-config-key]').forEach(input => {
-            newData.config[input.dataset.configKey] = input.value;
-        });
-        document.querySelectorAll('#config-editor input[data-config-type="api"]').forEach(input => {
-            newData.config.apis[input.dataset.key] = input.value;
-        });
+        document.querySelectorAll('#config-editor input[data-config-key]').forEach(input => { newData.config[input.dataset.configKey] = input.value; });
+        document.querySelectorAll('#config-editor input[data-config-type="api"]').forEach(input => { newData.config.apis[input.dataset.key] = input.value; });
         newData.config.ai.model = document.getElementById('ai-model').value;
         newData.config.ai.prompt = document.getElementById('ai-prompt').value;
         newData.config.currencies.supported = document.getElementById('config-currencies').value.split(',').map(c => c.trim());
@@ -223,8 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Save Themes
         document.querySelectorAll('#theme-list .item-card').forEach(card => {
             newData.config.themes.push({
-                name: card.querySelector('.theme-name').value,
-                fontFamily: card.querySelector('.theme-font').value,
+                name: card.querySelector('.theme-name').value, fontFamily: card.querySelector('.theme-font').value,
                 light: { primary: card.querySelector('.theme-light-primary').value, secondary: card.querySelector('.theme-light-secondary').value },
                 dark: { primary: card.querySelector('.theme-dark-primary').value, secondary: card.querySelector('.theme-dark-secondary').value }
             });
@@ -232,23 +245,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Save Categories
         document.querySelectorAll('#category-list .item-card').forEach(card => {
-            newData.categories.push({
-                name: card.querySelector('.cat-name').value,
-                description: card.querySelector('.cat-desc').value,
-                icon: card.querySelector('.cat-icon').value
-            });
+            newData.categories.push({ name: card.querySelector('.cat-name').value, description: card.querySelector('.cat-desc').value });
         });
 
         // Save Apps
         document.querySelectorAll('#app-list .item-card').forEach((card, index) => {
             newData.apps.push({
-                id: fullData.apps[index]?.id || Date.now(),
-                name: card.querySelector('.app-name').value,
-                category: card.querySelector('.app-cat').value,
-                description: card.querySelector('.app-desc').value,
+                id: fullData.apps[index]?.id || Date.now(), name: card.querySelector('.app-name').value, category: card.querySelector('.app-cat').value,
+                description: card.querySelector('.app-desc').value, icon: card.querySelector('.app-icon').value,
                 cost: {
-                    monthly: parseFloat(card.querySelector('.app-cost-monthly').value),
-                    yearly: parseFloat(card.querySelector('.app-cost-yearly').value),
+                    monthly: parseFloat(card.querySelector('.app-cost-monthly').value), yearly: parseFloat(card.querySelector('.app-cost-yearly').value),
                     currency: card.querySelector('.app-currency').value
                 }
             });
@@ -257,13 +263,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Save Templates
         document.querySelectorAll('#template-list .item-card').forEach(card => {
             const checkedAppIds = Array.from(card.querySelectorAll('.template-apps-list input:checked')).map(input => parseInt(input.value));
-            newData.config.templates.push({
-                name: card.querySelector('.template-name').value,
-                appIds: checkedAppIds
-            });
+            newData.config.templates.push({ name: card.querySelector('.template-name').value, appIds: checkedAppIds });
         });
 
-        // Trigger download
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(newData, null, 2));
         const a = document.createElement('a');
         a.href = dataStr;
