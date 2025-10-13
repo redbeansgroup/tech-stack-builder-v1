@@ -7,7 +7,10 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1"></script>
+    <script type="module">
+        import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
+        window.aiPipeline = pipeline;
+    </script>
 </head>
 <body>
 
@@ -103,6 +106,9 @@
                 <h2>Step 4: AI Description Adjuster</h2>
                 <textarea id="aiInputText" placeholder="Write or paste a description here..."></textarea>
                 <button id="aiAdjustBtn">✨ Adjust Description</button>
+                <div class="loading-bar-container hidden">
+                    <div class="loading-bar"></div>
+                </div>
                 <div id="aiOutputText" class="ai-output"></div>
             </div>
 
@@ -123,5 +129,5 @@
         </div>
     </div>
 </body>
-<script src="script.js"></script>
+<script src="script.js" type="module"></script>
 </html>
