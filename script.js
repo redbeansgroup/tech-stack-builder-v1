@@ -1,5 +1,3 @@
-import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
-
 document.addEventListener('DOMContentLoaded', async () => {
     // --- Global State & Config ---
     let appData = {};
@@ -34,13 +32,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const aiOutputText = document.getElementById('aiOutputText');
     const loadingBarContainer = document.querySelector('.loading-bar-container');
     const loadingBar = document.querySelector('.loading-bar');
-
-    // Modal Elements
-    const iconModal = document.getElementById('iconModal');
-    const iconSearchInput = document.getElementById('iconSearchInput');
-    const iconResultsDiv = document.getElementById('iconResults');
-    let currentCategoryToUpdate = null;
-
 
     // --- INITIALIZATION ---
     async function init() {
@@ -134,27 +125,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     function populateCategories() {
         categoryTogglesDiv.innerHTML = '';
         appData.categories.forEach(category => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'category-btn-wrapper';
-            wrapper.innerHTML = `
-                <button class="category-btn" data-category="${category.name}">${category.name}</button>
-                <button class="category-icon-btn" data-category="${category.name}">
-                    <img src="${config.apis.iconRetrieve.replace('{icon}', category.icon)}" alt="icon">
-                </button>
-            `;
-            const mainBtn = wrapper.querySelector('.category-btn');
-            mainBtn.onclick = () => { 
-                wrapper.classList.toggle('active'); 
+            const btn = document.createElement('button');
+            btn.className = 'category-btn';
+            btn.textContent = category.name;
+            btn.dataset.category = category.name;
+            btn.onclick = () => { 
+                btn.classList.toggle('active'); 
                 activeCategories.has(category.name) ? activeCategories.delete(category.name) : activeCategories.add(category.name); 
                 populateApps(); 
             };
-            categoryTogglesDiv.appendChild(wrapper);
+            categoryTogglesDiv.appendChild(btn);
         });
     }
 
     function populateApps() {
         appSelectionArea.innerHTML = '';
-        const defaultIcon = config.apis.iconRetrieve.replace('{icon}', 'mdi:apps');
         appData.apps
             .filter(app => activeCategories.has(app.category))
             .forEach(app => {
@@ -162,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 appDiv.className = 'app-item';
                 appDiv.draggable = true;
                 appDiv.dataset.appId = app.id;
-                appDiv.innerHTML = `<img src="${defaultIcon}" alt=""><span>${app.name}</span>`;
+                appDiv.innerHTML = `<img src="${config.apis.iconRetrieve.replace('{icon}', app.icon)}" alt=""><span>${app.name}</span>`;
                 appDiv.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', app.id));
                 appSelectionArea.appendChild(appDiv);
             });
@@ -180,7 +165,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderTechStack() {
         stackRowsDiv.innerHTML = '';
-        const defaultIcon = config.apis.iconRetrieve.replace('{icon}', 'mdi:apps');
         techStack.forEach(app => {
             const isYearly = costToggle.checked;
             const cost = isYearly ? app.cost.yearly : app.cost.monthly;
@@ -191,7 +175,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             row.className = 'stack-row';
             row.innerHTML = `
                 <div class="stack-row-item stack-app-name">
-                    <img src="${defaultIcon}" alt="${app.name} icon">
+                    <img src="${config.apis.iconRetrieve.replace('{icon}', app.icon)}" alt="${app.name} icon">
                     <span>${app.name}</span>
                 </div>
                 <div class="stack-row-item"><p>${app.description}</p></div>
@@ -295,16 +279,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadingBarContainer.classList.remove('hidden');
         loadingBar.style.transition = 'none';
         loadingBar.style.width = '0%';
-        
-        // Force a reflow to restart the animation
         void loadingBar.offsetWidth; 
-        
         loadingBar.style.transition = 'width 20s linear';
         loadingBar.classList.add('active');
 
         try {
             if (!aiGenerator) {
-                aiGenerator = await pipeline('text2text-generation', config.ai.model);
+                aiGenerator = await window.aiPipeline('text2text-generation', config.ai.model);
             }
             const prompt = config.ai.prompt.replace('{text}', text);
             const output = await aiGenerator(prompt, { max_new_tokens: 100, num_beams: 4 });
@@ -317,42 +298,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadingBar.classList.remove('active');
         }
     }
-
-    async function searchIcons(event) {
-        if (event.key !== 'Enter') return;
-        const query = iconSearchInput.value;
-        if (query.length < 3) return;
-        
-        const url = config.apis.iconSearch.replace('{query}', encodeURIComponent(query));
-        const response = await fetch(url);
-        const data = await response.json();
-
-        iconResultsDiv.innerHTML = '';
-        data.icons.forEach(iconName => {
-            const iconUrl = config.apis.iconRetrieve.replace('{icon}', iconName);
-            const item = document.createElement('div');
-            item.className = 'icon-result-item';
-            item.dataset.iconName = iconName;
-            item.innerHTML = `<img src="${iconUrl}" alt="${iconName}">`;
-            item.onclick = () => selectIcon(iconName);
-            iconResultsDiv.appendChild(item);
-        });
-    }
     
-    function selectIcon(iconName) {
-        const category = appData.categories.find(c => c.name === currentCategoryToUpdate);
-        if (category) {
-            category.icon = iconName;
-            // Update the icon in the category button UI
-            const wrapper = document.querySelector(`.category-btn-wrapper .category-btn[data-category="${currentCategoryToUpdate}"]`).parentElement;
-            if (wrapper) {
-                const img = wrapper.querySelector('img');
-                img.src = config.apis.iconRetrieve.replace('{icon}', iconName);
-            }
-        }
-        iconModal.classList.add('hidden');
-    }
-
     // --- PDF GENERATION ---
     function generatePDF() {
         const { jsPDF } = window.jspdf;
@@ -500,23 +446,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const reader = new FileReader();
                 reader.onload = (event) => { preparerLogo = event.target.result; };
                 reader.readAsDataURL(file);
-            }
-        });
-
-        // Modal Listeners
-        document.body.addEventListener('click', e => {
-            const iconButton = e.target.closest('.category-icon-btn');
-            if (iconButton) {
-                currentCategoryToUpdate = iconButton.dataset.category;
-                iconModal.classList.remove('hidden');
-                iconSearchInput.focus();
-            }
-        });
-        iconSearchInput.addEventListener('keydown', searchIcons);
-        iconModal.querySelector('.close-btn').addEventListener('click', () => iconModal.classList.add('hidden'));
-        iconModal.addEventListener('click', (e) => {
-            if (e.target === iconModal) {
-                 iconModal.classList.add('hidden');
             }
         });
     }
