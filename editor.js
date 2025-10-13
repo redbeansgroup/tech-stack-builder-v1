@@ -3,6 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const jsonFileInput = document.getElementById('jsonFileInput');
     const editorContent = document.getElementById('editor-content');
     const iconModal = document.getElementById('iconModal');
+    const closeIconModalBtn = document.getElementById('closeIconModalBtn');
+    const iconSearchInput = document.getElementById('iconSearchInput');
+    const iconResultsDiv = document.getElementById('iconResults');
+    const fileControlsSection = document.querySelector('.file-controls');
     let fullData = {};
     let activeIconInput = null;
 
@@ -18,7 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 fullData = await response.json();
                 editorContent.classList.remove('hidden');
-                document.querySelector('.file-controls').style.display = 'none'; // Hide the file upload section
+                if (fileControlsSection) {
+                    fileControlsSection.style.display = 'none';
+                }
                 buildFullEditor();
             } else {
                 console.warn('data.json not found. Waiting for file upload.');
@@ -37,6 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 fullData = JSON.parse(e.target.result);
                 editorContent.classList.remove('hidden');
+                if (fileControlsSection) {
+                    fileControlsSection.style.display = 'none';
+                }
                 buildFullEditor();
             } catch (error) {
                 alert('Error parsing JSON file. Please check the file format.');
@@ -187,9 +196,13 @@ document.addEventListener('DOMContentLoaded', () => {
             buildFullEditor();
         });
 
-        closeIconModalBtn.addEventListener('click', () => iconModal.classList.add('hidden'));
+        if (closeIconModalBtn) {
+            closeIconModalBtn.addEventListener('click', () => iconModal.classList.add('hidden'));
+        }
         iconModal.addEventListener('click', (e) => { if(e.target === iconModal) iconModal.classList.add('hidden'); });
-        iconSearchInput.addEventListener('keydown', handleIconSearch);
+        if (iconSearchInput) {
+            iconSearchInput.addEventListener('keydown', handleIconSearch);
+        }
         
         document.getElementById('saveJsonBtn').addEventListener('click', saveData);
     }
@@ -217,14 +230,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function openIconModal(targetInputId) {
         activeIconInput = document.getElementById(targetInputId);
         iconModal.classList.remove('hidden');
-        iconSearchInput.focus();
+        if (iconSearchInput) {
+            iconSearchInput.focus();
+            iconSearchInput.select();
+        }
+        if (iconResultsDiv) {
+            iconResultsDiv.innerHTML = '';
+        }
     }
 
     async function handleIconSearch(e) {
         if (e.key !== 'Enter') return;
+        if (!iconSearchInput || !iconResultsDiv) return;
+
         const query = iconSearchInput.value;
         if (query.length < 3) return;
-        
+
         const url = fullData.config.apis.iconSearch.replace('{query}', encodeURIComponent(query));
         try {
             const response = await fetch(url);
