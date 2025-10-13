@@ -2,27 +2,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Element References ---
     const jsonFileInput = document.getElementById('jsonFileInput');
     const editorContent = document.getElementById('editor-content');
+    
+    // Modal elements
     const iconModal = document.getElementById('iconModal');
+    const iconSearchInput = document.getElementById('iconSearchInput');
+    const iconResultsDiv = document.getElementById('iconResults');
+    const closeIconModalBtn = document.getElementById('closeIconModalBtn');
+    
     let fullData = {};
     let activeIconInput = null;
 
-    // --- INITIALIZATION ---
-    async function initEditor() {
+    // --- Core Initializer ---
+    async function init() {
+        // Ensure modal is hidden on start, no matter what.
+        iconModal.classList.add('hidden');
+        
+        setupStaticEventListeners();
+
         try {
             const response = await fetch('./data.json');
             if (response.ok) {
                 fullData = await response.json();
                 editorContent.classList.remove('hidden');
+                document.querySelector('.file-controls').style.display = 'none'; // Hide the file upload section
                 buildFullEditor();
             } else {
                 console.warn('data.json not found. Waiting for file upload.');
             }
         } catch (error) {
-            console.error('Failed to auto-load data.json:', error);
+            console.error('Failed to auto-load data.json on startup:', error);
         }
     }
 
-    // --- FILE LOADING ---
+    // --- File Loading ---
     jsonFileInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -34,23 +46,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 buildFullEditor();
             } catch (error) {
                 alert('Error parsing JSON file. Please check the file format.');
-                console.error("JSON Parse Error:", error);
             }
         };
         reader.readAsText(file);
     });
 
-    // --- UI BUILDERS ---
+    // --- UI Builders ---
     function buildFullEditor() {
-        // Find all collapsible sections and clear them
-        document.querySelectorAll('[data-container]').forEach(container => container.innerHTML = '');
-        
         buildConfigEditor();
         buildThemesEditor();
         buildCategoriesEditor();
         buildAppsEditor();
         buildTemplatesEditor();
-        setupDynamicEventListeners();
     }
     
     function buildConfigEditor() {
@@ -91,13 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <label>Name</label><input type="text" value="${theme.name}" class="theme-name">
                 <label>Font Family</label><input type="text" value="${theme.fontFamily}" class="theme-font">
                 <div class="theme-card-grid">
-                    <div class="theme-colors">
-                        <h4>Light Mode</h4>
+                    <div><h4>Light Mode</h4>
                         <div class="color-input-group"><label>Primary</label><input type="color" value="${theme.light.primary}" class="theme-light-primary"></div>
                         <div class="color-input-group"><label>Secondary</label><input type="color" value="${theme.light.secondary}" class="theme-light-secondary"></div>
                     </div>
-                    <div class="theme-colors">
-                        <h4>Dark Mode</h4>
+                    <div><h4>Dark Mode</h4>
                         <div class="color-input-group"><label>Primary</label><input type="color" value="${theme.dark.primary}" class="theme-dark-primary"></div>
                         <div class="color-input-group"><label>Secondary</label><input type="color" value="${theme.dark.secondary}" class="theme-dark-secondary"></div>
                     </div>
@@ -165,80 +170,89 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- DYNAMIC EVENT LISTENERS ---
-    function setupDynamicEventListeners() {
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.onclick = (e) => deleteItem(e.target.dataset.type, e.target.dataset.index);
-        });
-
-        document.querySelectorAll('.open-icon-modal').forEach(btn => {
-            btn.onclick = (e) => openIconModal(e.target.dataset.targetInput);
-        });
-    }
-
-    // --- ADD/DELETE LOGIC ---
-    function deleteItem(type, index) {
-        if (confirm(`Are you sure you want to delete this ${type}?`)) {
-            if (type === 'theme') fullData.config.themes.splice(index, 1);
-            if (type === 'category') fullData.categories.splice(index, 1);
-            if (type === 'app') fullData.apps.splice(index, 1);
-            if (type === 'template') fullData.config.templates.splice(index, 1);
+    // --- EVENT HANDLING ---
+    function setupStaticEventListeners() {
+        document.getElementById('addThemeBtn').addEventListener('click', () => {
+            fullData.config.themes.push({ name: "New Theme", fontFamily: "sans-serif", light: { primary: "#000000", secondary: "#cccccc" }, dark: { primary: "#ffffff", secondary: "#333333" } });
             buildFullEditor();
-        }
+        });
+        document.getElementById('addCategoryBtn').addEventListener('click', () => {
+            fullData.categories.push({ name: "New Category", description: "" });
+            buildFullEditor();
+        });
+        document.getElementById('addAppBtn').addEventListener('click', () => {
+            fullData.apps.push({ id: Date.now(), name: "New App", category: "", description: "", icon: "mdi:help-box", cost: { monthly: 0, yearly: 0, currency: "USD" } });
+            buildFullEditor();
+        });
+        document.getElementById('addTemplateBtn').addEventListener('click', () => {
+            fullData.config.templates.push({ name: "New Template", appIds: [] });
+            buildFullEditor();
+        });
+
+        closeIconModalBtn.addEventListener('click', () => iconModal.classList.add('hidden'));
+        iconModal.addEventListener('click', (e) => { if(e.target === iconModal) iconModal.classList.add('hidden'); });
+        iconSearchInput.addEventListener('keydown', handleIconSearch);
+        
+        document.getElementById('saveJsonBtn').addEventListener('click', saveData);
     }
     
-    document.getElementById('addThemeBtn').addEventListener('click', () => {
-        fullData.config.themes.push({ name: "New Theme", fontFamily: "sans-serif", light: { primary: "#000000", secondary: "#cccccc" }, dark: { primary: "#ffffff", secondary: "#333333" } });
-        buildThemesEditor();
-    });
-    document.getElementById('addCategoryBtn').addEventListener('click', () => {
-        fullData.categories.push({ name: "New Category", description: "" });
-        buildCategoriesEditor();
-    });
-    document.getElementById('addAppBtn').addEventListener('click', () => {
-        fullData.apps.push({ id: Date.now(), name: "New App", category: "", description: "", icon: "mdi:help-box", cost: { monthly: 0, yearly: 0, currency: "USD" } });
-        buildAppsEditor();
-    });
-    document.getElementById('addTemplateBtn').addEventListener('click', () => {
-        fullData.config.templates.push({ name: "New Template", appIds: [] });
-        buildTemplatesEditor();
+    // Re-attach listeners to dynamically created elements
+    document.addEventListener('click', (e) => {
+        if (e.target.matches('.delete-btn')) {
+            const type = e.target.dataset.type;
+            const index = e.target.dataset.index;
+            if (confirm(`Are you sure you want to delete this ${type}?`)) {
+                if (type === 'theme') fullData.config.themes.splice(index, 1);
+                if (type === 'category') fullData.categories.splice(index, 1);
+                if (type === 'app') fullData.apps.splice(index, 1);
+                if (type === 'template') fullData.config.templates.splice(index, 1);
+                buildFullEditor();
+            }
+        }
+        if (e.target.matches('.open-icon-modal')) {
+            activeIconInput = document.getElementById(e.target.dataset.targetInput);
+            iconModal.classList.remove('hidden');
+            iconSearchInput.focus();
+        }
     });
 
-    // --- ICON MODAL LOGIC ---
-    function openIconModal(targetInputId) {
-        activeIconInput = document.getElementById(targetInputId);
-        iconModal.classList.remove('hidden');
-        iconSearchInput.focus();
-    }
-
-    closeIconModalBtn.addEventListener('click', () => iconModal.classList.add('hidden'));
-    iconModal.addEventListener('click', (e) => { if(e.target === iconModal) iconModal.classList.add('hidden'); });
-
-    iconSearchInput.addEventListener('keydown', async (e) => {
+    // --- ICON MODAL ---
+    async function handleIconSearch(e) {
         if (e.key !== 'Enter') return;
         const query = iconSearchInput.value;
         if (query.length < 3) return;
         
         const url = fullData.config.apis.iconSearch.replace('{query}', encodeURIComponent(query));
-        const response = await fetch(url);
-        const data = await response.json();
-        iconResultsDiv.innerHTML = '';
-        data.icons.forEach(iconName => {
-            const iconUrl = fullData.config.apis.iconRetrieve.replace('{icon}', iconName);
-            const item = document.createElement('div');
-            item.className = 'icon-result-item';
-            item.innerHTML = `<img src="${iconUrl}" alt="${iconName}">`;
-            item.onclick = () => {
-                if(activeIconInput) activeIconInput.value = iconName;
-                iconModal.classList.add('hidden');
-            };
-            iconResultsDiv.appendChild(item);
-        });
-    });
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            iconResultsDiv.innerHTML = '';
+            data.icons.forEach(iconName => {
+                const iconUrl = fullData.config.apis.iconRetrieve.replace('{icon}', iconName);
+                const item = document.createElement('div');
+                item.className = 'icon-result-item';
+                item.innerHTML = `<img src="${iconUrl}" alt="${iconName}">`;
+                item.onclick = () => {
+                    if(activeIconInput) activeIconInput.value = iconName;
+                    iconModal.classList.add('hidden');
+                };
+                iconResultsDiv.appendChild(item);
+            });
+        } catch (error) {
+            console.error("Icon search failed:", error);
+            iconResultsDiv.innerHTML = 'Could not fetch icons.';
+        }
+    }
 
     // --- SAVE LOGIC ---
-    document.getElementById('saveJsonBtn').addEventListener('click', () => {
-        const newData = { ...fullData, config: { ...fullData.config, themes: [], templates: [] }, categories: [], apps: [] };
+    function saveData() {
+        const newData = JSON.parse(JSON.stringify(fullData)); // Deep copy
+
+        // Clear arrays to rebuild them from the DOM
+        newData.config.themes = [];
+        newData.config.templates = [];
+        newData.categories = [];
+        newData.apps = [];
 
         // Save Config
         document.querySelectorAll('#config-editor input[data-config-key]').forEach(input => { newData.config[input.dataset.configKey] = input.value; });
@@ -248,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
         newData.config.currencies.supported = document.getElementById('config-currencies').value.split(',').map(c => c.trim());
         newData.config.currencies.default = document.getElementById('config-default-currency').value;
 
-        // Save Themes
+        // Save Themes, Categories, Apps, Templates
         document.querySelectorAll('#theme-list .item-card').forEach(card => {
             newData.config.themes.push({
                 name: card.querySelector('.theme-name').value, fontFamily: card.querySelector('.theme-font').value,
@@ -257,12 +271,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Save Categories
         document.querySelectorAll('#category-list .item-card').forEach(card => {
             newData.categories.push({ name: card.querySelector('.cat-name').value, description: card.querySelector('.cat-desc').value });
         });
 
-        // Save Apps
         document.querySelectorAll('#app-list .item-card').forEach((card, index) => {
             newData.apps.push({
                 id: fullData.apps[index]?.id || Date.now(), name: card.querySelector('.app-name').value, category: card.querySelector('.app-cat').value,
@@ -274,7 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Save Templates
         document.querySelectorAll('#template-list .item-card').forEach(card => {
             const checkedAppIds = Array.from(card.querySelectorAll('.template-apps-list input:checked')).map(input => parseInt(input.value));
             newData.config.templates.push({ name: card.querySelector('.template-name').value, appIds: checkedAppIds });
@@ -285,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
         a.href = dataStr;
         a.download = 'data.json';
         a.click();
-    });
+    }
 
     initEditor();
 });
