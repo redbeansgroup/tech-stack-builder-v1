@@ -1,3 +1,5 @@
+import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
+
 document.addEventListener('DOMContentLoaded', async () => {
     // --- Global State & Config ---
     let appData = {};
@@ -7,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let preparerLogo = null;
     let selectedCurrency = 'USD';
     let currencyRates = {};
-    let aiSummarizer = null;
+    let aiGenerator = null;
 
     // --- Element References ---
     const darkModeToggle = document.getElementById('darkModeToggle');
@@ -30,6 +32,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const aiAdjustBtn = document.getElementById('aiAdjustBtn');
     const aiInputText = document.getElementById('aiInputText');
     const aiOutputText = document.getElementById('aiOutputText');
+    const loadingBarContainer = document.querySelector('.loading-bar-container');
+    const loadingBar = document.querySelector('.loading-bar');
 
     // Modal Elements
     const iconModal = document.getElementById('iconModal');
@@ -130,12 +134,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     function populateCategories() {
         categoryTogglesDiv.innerHTML = '';
         appData.categories.forEach(category => {
-            const btn = document.createElement('button');
-            btn.className = 'category-btn';
-            btn.textContent = category.name;
-            btn.dataset.category = category.name;
-            btn.onclick = () => { btn.classList.toggle('active'); activeCategories.has(category.name) ? activeCategories.delete(category.name) : activeCategories.add(category.name); populateApps(); };
-            categoryTogglesDiv.appendChild(btn);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'category-btn-wrapper';
+            wrapper.innerHTML = `
+                <button class="category-btn" data-category="${category.name}">${category.name}</button>
+                <button class="category-icon-btn" data-category="${category.name}">
+                    <img src="${config.apis.iconRetrieve.replace('{icon}', category.icon)}" alt="icon">
+                </button>
+            `;
+            const mainBtn = wrapper.querySelector('.category-btn');
+            mainBtn.onclick = () => { 
+                wrapper.classList.toggle('active'); 
+                activeCategories.has(category.name) ? activeCategories.delete(category.name) : activeCategories.add(category.name); 
+                populateApps(); 
+            };
+            categoryTogglesDiv.appendChild(wrapper);
         });
     }
 
@@ -278,17 +291,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert('Please enter a description to adjust.');
             return;
         }
-        aiOutputText.textContent = 'Thinking...';
+        aiOutputText.textContent = '';
+        loadingBarContainer.classList.remove('hidden');
+        loadingBar.style.transition = 'none';
+        loadingBar.style.width = '0%';
+        
+        // Force a reflow to restart the animation
+        void loadingBar.offsetWidth; 
+        
+        loadingBar.style.transition = 'width 20s linear';
+        loadingBar.classList.add('active');
+
         try {
-            if (!aiSummarizer) {
-                const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
-                aiSummarizer = await pipeline('summarization', 'Xenova/distilbart-cnn-6-6');
+            if (!aiGenerator) {
+                aiGenerator = await pipeline('text2text-generation', config.ai.model);
             }
-            const output = await aiSummarizer(text, { max_new_tokens: 50, min_new_tokens: 10 });
-            aiOutputText.textContent = output[0].summary_text;
+            const prompt = config.ai.prompt.replace('{text}', text);
+            const output = await aiGenerator(prompt, { max_new_tokens: 100, num_beams: 4 });
+            aiOutputText.textContent = output[0].generated_text;
         } catch (error) {
-            console.error('AI summarization failed:', error);
-            aiOutputText.textContent = 'An error occurred. The AI model might still be downloading.';
+            console.error('AI generation failed:', error);
+            aiOutputText.textContent = 'An error occurred. The AI model might still be downloading in the background.';
+        } finally {
+            loadingBarContainer.classList.add('hidden');
+            loadingBar.classList.remove('active');
         }
     }
 
@@ -317,6 +343,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const category = appData.categories.find(c => c.name === currentCategoryToUpdate);
         if (category) {
             category.icon = iconName;
+            // Update the icon in the category button UI
+            const wrapper = document.querySelector(`.category-btn-wrapper .category-btn[data-category="${currentCategoryToUpdate}"]`).parentElement;
+            if (wrapper) {
+                const img = wrapper.querySelector('img');
+                img.src = config.apis.iconRetrieve.replace('{icon}', iconName);
+            }
         }
         iconModal.classList.add('hidden');
     }
@@ -421,9 +453,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const reader = new FileReader();
                     reader.readAsDataURL(blob);
                     reader.onloadend = () => addTotalsAndSave(reader.result);
-                }).catch(() => addTotalsAndSave()); // Save without chart if fetch fails
+                }).catch(() => addTotalsAndSave());
         } else {
-            addTotalsAndSave(); // No data for chart, just save
+            addTotalsAndSave();
         }
     }
     
