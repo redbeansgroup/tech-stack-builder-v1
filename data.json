@@ -35,6 +35,10 @@
       "iconRetrieve": "https://api.iconify.design/{icon}.svg",
       "pieChart": "https://quickchart.io/chart?bkg=transparent&c={type:'pie',data:{labels:[{labels}],datasets:[{data:[{data}]}]}}"
     },
+    "ai": {
+      "model": "Xenova/LaMini-T5-77M",
+      "prompt": "Rewrite the following description to be exceptionally clear, concise, and professional for a business proposal. Adopt an academic, formal style. Do not repeat ideas. Description: {text}"
+    },
     "templates": [
       {
         "name": "E-commerce Startup",
