@@ -25,6 +25,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let fullData = {};
 
+    // --- INITIALIZATION ---
+    async function initEditor() {
+        try {
+            const response = await fetch('./data.json');
+            if (response.ok) {
+                fullData = await response.json();
+                editorContent.classList.remove('hidden');
+                buildFullEditor();
+            } else {
+                console.warn('data.json not found or could not be loaded. Editor remains in "Load Data" state.');
+            }
+        } catch (error) {
+            console.error('Failed to load data.json on startup:', error);
+        }
+    }
+
     // --- FILE LOADING ---
     jsonFileInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
@@ -272,4 +288,6 @@ document.addEventListener('DOMContentLoaded', () => {
         a.download = 'data.json';
         a.click();
     });
+
+    initEditor();
 });
