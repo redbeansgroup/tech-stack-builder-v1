@@ -27,10 +27,27 @@ main {
 
 .editor-section {
     background: #fff;
-    padding: 20px;
+    padding: 10px 20px 20px 20px;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     margin-bottom: 25px;
+}
+
+details > summary {
+    cursor: pointer;
+    list-style: none; /* Remove default marker */
+}
+details > summary::-webkit-details-marker {
+    display: none; /* Remove default marker for Chrome */
+}
+details > summary h2::before {
+    content: '▶';
+    margin-right: 10px;
+    font-size: 0.8em;
+    transition: transform 0.2s;
+}
+details[open] > summary h2::before {
+    transform: rotate(90deg);
 }
 
 .hidden {
@@ -46,7 +63,7 @@ h1, h2, h3 {
     color: #1d1d1f;
 }
 
-h2 { margin-top: 0; }
+h2 { margin-top: 10px; margin-bottom: 10px; }
 h3 { margin-top: 20px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 h4 { margin-top: 15px; margin-bottom: 10px; }
 
@@ -83,7 +100,7 @@ textarea {
     padding: 20px;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    margin-bottom: 15px;
+    margin-top: 15px;
     background-color: #fafafa;
 }
 
@@ -147,6 +164,7 @@ button {
     font-size: 1rem;
     cursor: pointer;
     transition: background-color 0.2s;
+    margin-top: 10px;
 }
 
 button.add-btn {
