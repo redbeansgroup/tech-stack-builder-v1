@@ -65,6 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }
 
+        configEditorDiv.innerHTML += '<h3>AI Settings</h3>';
+        configEditorDiv.innerHTML += `<label for="ai-model">AI Model Path</label><input type="text" id="ai-model" value="${fullData.config.ai.model}">`;
+        configEditorDiv.innerHTML += `<label for="ai-prompt">AI Prompt Template</label><textarea id="ai-prompt">${fullData.config.ai.prompt}</textarea>`;
+
         configEditorDiv.innerHTML += '<h3>Currencies</h3>';
         const supportedCurrencies = fullData.config.currencies.supported.join(', ');
         const currencyOptions = fullData.config.currencies.supported.map(c => `<option value="${c}" ${c === fullData.config.currencies.default ? 'selected' : ''}>${c}</option>`).join('');
@@ -202,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- SAVE LOGIC ---
     saveJsonBtn.addEventListener('click', () => {
-        const newData = { config: { apis: {}, currencies: {}, themes: [], templates: [] }, categories: [], apps: [] };
+        const newData = { ...fullData, config: { ...fullData.config, themes: [], templates: [] }, categories: [], apps: [] };
 
         // Save Config
         document.querySelectorAll('#config-editor input[data-config-key]').forEach(input => {
@@ -211,6 +215,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('#config-editor input[data-config-type="api"]').forEach(input => {
             newData.config.apis[input.dataset.key] = input.value;
         });
+        newData.config.ai.model = document.getElementById('ai-model').value;
+        newData.config.ai.prompt = document.getElementById('ai-prompt').value;
         newData.config.currencies.supported = document.getElementById('config-currencies').value.split(',').map(c => c.trim());
         newData.config.currencies.default = document.getElementById('config-default-currency').value;
 
